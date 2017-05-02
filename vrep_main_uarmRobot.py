@@ -4,7 +4,7 @@ import time
 import math
 import random
 
-eps = 0.2
+eps = 0.1
 
 vrep.simxFinish(-1) # just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # Connect to V-REP
@@ -41,46 +41,71 @@ def close_gripper():
 
 
 def rotate_clockwise():
+    print("clockwise")
     return_code, current_pos = vrep.simxGetJointPosition(clientID, uarm_motor1_handle, vrep.simx_opmode_buffer)
     print(current_pos)
     new_pos = current_pos - eps
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
 
 def rotate_counter_clockwise():
+    print("counter_clockwise")
     return_code, current_pos = vrep.simxGetJointPosition(clientID, uarm_motor1_handle, vrep.simx_opmode_buffer)
     print(current_pos)
     new_pos = current_pos + eps
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
 
 def rotate_front():
+    print("front")
     return_code, current_pos = vrep.simxGetJointPosition(clientID, uarm_motor2_handle, vrep.simx_opmode_buffer)
     print(current_pos)
-    new_pos = current_pos + eps
+    new_pos = current_pos - eps
+    if (new_pos < 0.2):
+        new_pos = 0.2
+
+    return_code, down_pos = vrep.simxGetJointPosition(clientID, uarm_motor3_handle, vrep.simx_opmode_buffer)
+
+    if (current_pos < 0.9) and (down_pos > 2.4):
+        new_pos = 0.9
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
 
 def rotate_back():
+    print("back")
     return_code, current_pos = vrep.simxGetJointPosition(clientID, uarm_motor2_handle, vrep.simx_opmode_buffer)
     print(current_pos)
-    new_pos = current_pos - eps
+    new_pos = current_pos + eps
+    if (new_pos > 1.9):
+        new_pos = 1.9
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
 
 def rotate_up():
+    print("up")
     return_code, current_pos = vrep.simxGetJointPosition(clientID, uarm_motor3_handle, vrep.simx_opmode_buffer)
     print(current_pos)
     new_pos = current_pos - eps
+    if (new_pos < 0.13):
+        new_pos = 0.13
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
 
 def rotate_down():
+    print("down")
     return_code, current_pos = vrep.simxGetJointPosition(clientID, uarm_motor3_handle, vrep.simx_opmode_buffer)
+    return_code, front_pos = vrep.simxGetJointPosition(clientID, uarm_motor2_handle, vrep.simx_opmode_buffer)
     print(current_pos)
     new_pos = current_pos + eps
+    if (front_pos < 0.9) and (current_pos > 2.4):
+        new_pos = 2.4
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
 
 actions = [rotate_clockwise, rotate_counter_clockwise, rotate_front, rotate_back, rotate_up, rotate_down, open_gripper, close_gripper]
+#actions = [rotate_clockwise, rotate_back, rotate_up]
+#actions = [rotate_counter_clockwise, rotate_front, rotate_down]
+#actions = [rotate_down]
 
 
-n_steps = 50
+
+
+n_steps = 10000
 for i in range(0, n_steps):
-    time.sleep(0.5)
+    time.sleep(0.05)
     action = random.choice(actions)
     action()
