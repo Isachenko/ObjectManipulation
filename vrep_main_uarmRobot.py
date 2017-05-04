@@ -22,8 +22,7 @@ error_code, uarm_motor3_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor3
 error_code, uarm_motor4_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor4', vrep.simx_opmode_blocking)
 error_code, uarmGripper_motor_handle1 = vrep.simxGetObjectHandle(clientID, 'uarmGripper_motor1Method2', vrep.simx_opmode_blocking)
 error_code, uarmGripper_motor_handle2 = vrep.simxGetObjectHandle(clientID, 'uarmGripper_motor2Method2', vrep.simx_opmode_blocking)
-
-
+error_code, sphere_handle = vrep.simxGetObjectHandle(clientID, 'Sphere', vrep.simx_opmode_blocking)
 
 # Get joint position first time call
 return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor1_handle, vrep.simx_opmode_streaming)
@@ -32,6 +31,7 @@ return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor3_handle, 
 return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor4_handle, vrep.simx_opmode_streaming)
 return_code, position = vrep.simxGetJointPosition(clientID, uarmGripper_motor_handle1, vrep.simx_opmode_streaming)
 return_code, position = vrep.simxGetJointPosition(clientID, uarmGripper_motor_handle2, vrep.simx_opmode_streaming)
+returnCode, position = vrep.simxGetObjectPosition(clientID, sphere_handle, -1, vrep.simx_opmode_streaming)
 
 def open_gripper():
     return_code = vrep.simxSetJointTargetVelocity(clientID, uarmGripper_motor_handle1, 0.02, vrep.simx_opmode_streaming)
@@ -75,6 +75,10 @@ def rotate_down():
     print(current_pos)
     new_pos = current_pos + eps
     retur_ncode = vrep.simxSetJointTargetPosition(clientID, uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+
+def get_sphere_position():
+    returnCode, position = vrep.simxGetObjectPosition(clientID, sphere_handle, -1, vrep.simx_opmode_streaming)
+    return position
 
 actions = [rotate_clockwise, rotate_counter_clockwise, rotate_front, rotate_back, rotate_up, rotate_down, open_gripper, close_gripper]
 
