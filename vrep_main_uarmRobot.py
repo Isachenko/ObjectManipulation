@@ -3,35 +3,21 @@ import sys
 import time
 import math
 import random
+import tensorflow as tf
+print(tf.__version__)
 
 eps = 0.1
 
 vrep.simxFinish(-1) # just in case, close all opened connections
-clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # Connect to V-REP
 
-if clientID!=-1:
-    print ('Connected to remote API server')
+contiousID=vrep.simxStart('127.0.0.1',19997,True,True,5000,5) # Connect to V-REP
+if contiousID!=-1:
+    print ('Connected to continuous remote API server service')
 else:
     print('Connection not succesfull')
     sys.exit('could not connect')
 
-# Move one joint
-error_code, uarm_motor1_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor1', vrep.simx_opmode_blocking) # Position from 0 to 3.14
-error_code, uarm_motor2_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor2', vrep.simx_opmode_blocking)
-error_code, uarm_motor3_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor3', vrep.simx_opmode_blocking)
-error_code, uarm_motor4_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor4', vrep.simx_opmode_blocking)
-error_code, uarmGripper_motor_handle1 = vrep.simxGetObjectHandle(clientID, 'uarmGripper_motor1Method2', vrep.simx_opmode_blocking)
-error_code, uarmGripper_motor_handle2 = vrep.simxGetObjectHandle(clientID, 'uarmGripper_motor2Method2', vrep.simx_opmode_blocking)
-error_code, sphere_handle = vrep.simxGetObjectHandle(clientID, 'Sphere', vrep.simx_opmode_blocking)
 
-# Get joint position first time call
-return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor1_handle, vrep.simx_opmode_streaming)
-return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor2_handle, vrep.simx_opmode_streaming)
-return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor3_handle, vrep.simx_opmode_streaming)
-return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor4_handle, vrep.simx_opmode_streaming)
-return_code, position = vrep.simxGetJointPosition(clientID, uarmGripper_motor_handle1, vrep.simx_opmode_streaming)
-return_code, position = vrep.simxGetJointPosition(clientID, uarmGripper_motor_handle2, vrep.simx_opmode_streaming)
-returnCode, position = vrep.simxGetObjectPosition(clientID, sphere_handle, -1, vrep.simx_opmode_streaming)
 
 def open_gripper():
     return_code = vrep.simxSetJointTargetVelocity(clientID, uarmGripper_motor_handle1, 0.02, vrep.simx_opmode_streaming)
@@ -107,9 +93,66 @@ actions = [rotate_clockwise, rotate_counter_clockwise, rotate_front, rotate_back
 
 
 
+epochs_number = 10
+max_t = 100
+for epoch in range(epochs_number):
+    return_code = vrep.simxStartSimulation(contiousID, vrep.simx_opmode_oneshot)
+    time.sleep(2)
+    clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # Connect to V-REP
 
-n_steps = 10000
-for i in range(0, n_steps):
-    time.sleep(0.05)
-    action = random.choice(actions)
-    action()
+    if clientID!=-1:
+        print ('Connected to remote API server')
+    else:
+        print('Connection not succesfull')
+        return_code = vrep.simxStopSimulation(contiousID, vrep.simx_opmode_oneshot)
+        vrep.simxFinish(contiousID)
+        print('Simulation finished')
+        sys.exit('could not connect')
+
+    print("before getting hanles")
+    # Move one joint
+    error_code, uarm_motor1_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor1', vrep.simx_opmode_blocking) # Position from 0 to 3.14
+    print("after getting hanle 1")
+
+    error_code, uarm_motor2_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor2', vrep.simx_opmode_blocking)
+    print("after getting hanle 2")
+    print(error_code)
+
+
+    error_code, uarm_motor3_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor3', vrep.simx_opmode_blocking)
+    print("after getting hanle 3")
+
+    error_code, uarm_motor4_handle = vrep.simxGetObjectHandle(clientID, 'uarm_motor4', vrep.simx_opmode_blocking)
+    print("after getting hanle 4")
+
+
+    error_code, uarmGripper_motor_handle1 = vrep.simxGetObjectHandle(clientID, 'uarmGripper_motor1Method2', vrep.simx_opmode_blocking)
+    print("after getting hanle 5")
+
+    error_code, uarmGripper_motor_handle2 = vrep.simxGetObjectHandle(clientID, 'uarmGripper_motor2Method2', vrep.simx_opmode_blocking)
+    #error_code, sphere_handle = vrep.simxGetObjectHandle(clientID, 'Sphere', vrep.simx_opmode_blocking)
+    print("after getting hanles")
+
+    # Get joint position first time call
+    return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor1_handle, vrep.simx_opmode_streaming)
+    return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor2_handle, vrep.simx_opmode_streaming)
+    return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor3_handle, vrep.simx_opmode_streaming)
+    return_code, position = vrep.simxGetJointPosition(clientID, uarm_motor4_handle, vrep.simx_opmode_streaming)
+    return_code, position = vrep.simxGetJointPosition(clientID, uarmGripper_motor_handle1, vrep.simx_opmode_streaming)
+    return_code, position = vrep.simxGetJointPosition(clientID, uarmGripper_motor_handle2, vrep.simx_opmode_streaming)
+    #returnCode, position = vrep.simxGetObjectPosition(clientID, sphere_handle, -1, vrep.simx_opmode_streaming)
+    print("after getting positions")
+
+
+    for t in range(0, max_t):
+        time.sleep(0.05)
+        action = random.choice(actions)
+        action()
+
+    vrep.simxFinish(clientID)
+    return_code = vrep.simxStopSimulation(contiousID, vrep.simx_opmode_oneshot)
+    print("simulation finished")
+    time.sleep(4)
+
+
+vrep.simxFinish(contiousID)
