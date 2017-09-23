@@ -1,6 +1,7 @@
 import vrep
 import time
 import numpy as np
+import sys
 
 
 class VRepEnvironment():
@@ -14,6 +15,8 @@ class VRepEnvironment():
         self.uarm_gripper_motor_handle1 = -1
         self.uarm_gripper_motor_handle2 = -1
         self.uarm_camera_handle = -1
+        self.eps = 0.1
+        self.connect_to_vrep()
 
     def connect_to_vrep(self):
         vrep.simxFinish(-1)  # just in case, close all opened connections
@@ -62,6 +65,10 @@ class VRepEnvironment():
         time.sleep(0.1)
         print("Env has been reset")
 
+    def new_episode(self):
+        self.reset()
+        self.start()
+
     def start(self):
         return_code = vrep.simxStartSimulation(self.connection_id, vrep.simx_opmode_blocking)
         # Get joint position first time call
@@ -87,9 +94,13 @@ class VRepEnvironment():
         joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle1, vrep.simx_opmode_buffer))
         joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_buffer))
 
-        image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 0, vrep.simx_opmode_buffer)
+        err, res, image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 256, vrep.simx_opmode_buffer)
+        if image == []:
+            image = np.zeros([84*84])
+        else:
+            image = np.asarray(image)
 
-        #print(image)
+        #print("image: ")
 
         state = VrepState()
         state.joints = joints_positions
@@ -104,8 +115,75 @@ class VRepEnvironment():
         return reward
 
     def make_action(self, action):
-        err = vrep.simxSetJointTargetVelocity(self.connection_id, self.uarm_gripper_motor_handle1, 0.02, vrep.simx_opmode_streaming)
+        act_num = action.index(True)
+        actions = [self.rotate_clockwise, self.rotate_counter_clockwise, self.rotate_front, self.rotate_back,
+                   self.rotate_up, self.rotate_down]
+
+        #err = vrep.simxSetJointTargetVelocity(self.connection_id, self.uarm_gripper_motor_handle1, 0.02, vrep.simx_opmode_streaming)
+        actions[act_num]()
         vrep.simxSynchronousTrigger(self.connection_id)
+
+    def is_episode_finished(self):
+        return False
+
+    def rotate_clockwise(self):
+        # print("clockwise")
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)
+        # print(current_pos)
+        new_pos = current_pos - self.eps
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
+
+    def rotate_counter_clockwise(self):
+        # print("counter_clockwise")
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)
+        # print(current_pos)
+        new_pos = current_pos + self.eps
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
+
+    def rotate_front(self):
+        # print("front")
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer)
+        # print(current_pos)
+        new_pos = current_pos - self.eps
+        if (new_pos < 0.2):
+            new_pos = 0.2
+
+        return_code, down_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer)
+
+        if (current_pos < 0.9) and (down_pos > 2.4):
+            new_pos = 0.9
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
+
+    def rotate_back(self):
+        # print("back")
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer)
+        # print(current_pos)
+        new_pos = current_pos + self.eps
+        if (new_pos > 1.9):
+            new_pos = 1.9
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
+
+    def rotate_up(self):
+        # print("up")
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer)
+        # print(current_pos)
+        new_pos = current_pos - self.eps
+        if (new_pos < 0.13):
+            new_pos = 0.13
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+
+    def rotate_down(self):
+        # print("down")
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer)
+        return_code, front_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer)
+        # print(current_pos)
+        new_pos = current_pos + self.eps
+        if (front_pos < 0.9) and (current_pos > 2.4):
+            new_pos = 2.4
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+
+    def __del__(self):
+        self.disconnect_from_vrep()
 
 
 class VrepState():

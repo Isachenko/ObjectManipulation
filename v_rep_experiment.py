@@ -9,10 +9,10 @@ class VRepExperiment():
         self.max_t = max_t
 
     def run(self):
-        self.env.connect_to_vrep()
         for epoch in range(self.epochs_number):
             self.env.reset()
             self.env.start() #initialize firs state
+            time.sleep(1)
             self.agent.set_observation(self.env.get_state(), self.env.get_reward())
 
             for t in range(0, self.max_t):
@@ -20,7 +20,5 @@ class VRepExperiment():
                 self.env.make_action(action)
                 self.agent.set_observation(self.env.get_state(), self.env.get_reward())
                 #time.sleep(0.1)
-
-        self.env.disconnect_from_vrep()
 
 
