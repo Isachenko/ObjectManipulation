@@ -19,7 +19,7 @@ def process_frame(frame):
     #print(frame)
     s = np.reshape(frame,[np.prod(frame.shape)]) / 255.0
 
-    print(s.shape,s)
+    #print(s.shape,s)
     return s
 
 # Discounting function used to calculate discounted returns.

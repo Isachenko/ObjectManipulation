@@ -7,7 +7,7 @@ from time import sleep
 from worker import Worker
 from v_rep_environment import *
 
-max_episode_length = 300
+max_episode_length = 500
 gamma = .99  # discount rate for advantage estimation and reward discounting
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth

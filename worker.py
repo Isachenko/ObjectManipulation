@@ -98,7 +98,8 @@ class Worker():
 
                 self.env.new_episode()
                 s = self.env.get_state().image
-                episode_frames.append(s)
+                image_to_show = np.reshape(s, [84,84])
+                episode_frames.append(image_to_show)
                 s = process_frame(s)
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
@@ -117,7 +118,9 @@ class Worker():
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
-                        episode_frames.append(s1)
+                        image_to_show = np.reshape(s, [84,84])
+                        episode_frames.append(image_to_show)
+                        episode_frames.append(image_to_show)
                         s1 = process_frame(s1)
                     else:
                         s1 = s
@@ -129,6 +132,7 @@ class Worker():
                     s = s1
                     total_steps += 1
                     episode_step_count += 1
+                    print("step: ", episode_step_count, "/", max_episode_length, " reward: ", r)
 
                     # If the episode hasn't ended, but the experience buffer is full, then we
                     # make an update step using that experience rollout.
@@ -158,6 +162,7 @@ class Worker():
                     if self.name == 'worker_0' and episode_count % 25 == 0:
                         time_per_step = 0.05
                         images = np.array(episode_frames)
+                        print(images)
                         make_gif(images, './frames/image' + str(episode_count) + '.gif',
                                  duration=len(images) * time_per_step, true_image=True, salience=False)
                     if episode_count % 250 == 0 and self.name == 'worker_0':

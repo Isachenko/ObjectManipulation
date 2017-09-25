@@ -17,7 +17,8 @@ class VRepEnvironment():
         self.uarm_gripper_motor_handle2 = -1
         self.uarm_camera_handle = -1
         self.eps = 0.1
-        self.port = port
+        self.episode_length = 500
+        self.current_step = 0
         self.connect_to_vrep()
         self.load_scene()
 
@@ -73,6 +74,7 @@ class VRepEnvironment():
 
     def reset(self):
         return_code = vrep.simxStopSimulation(self.connection_id, vrep.simx_opmode_blocking)
+        self.current_step = 0
         time.sleep(0.1)
         print("Environment has been reset")
 
@@ -126,16 +128,18 @@ class VRepEnvironment():
         return reward
 
     def make_action(self, action):
-        act_num = action.index(True)
-        actions = [self.rotate_clockwise, self.rotate_counter_clockwise, self.rotate_front, self.rotate_back,
-                   self.rotate_up, self.rotate_down]
+        if self.current_step < self.episode_length:
+            act_num = action.index(True)
+            actions = [self.rotate_clockwise, self.rotate_counter_clockwise, self.rotate_front, self.rotate_back,
+                       self.rotate_up, self.rotate_down]
 
-        #err = vrep.simxSetJointTargetVelocity(self.connection_id, self.uarm_gripper_motor_handle1, 0.02, vrep.simx_opmode_streaming)
-        actions[act_num]()
-        vrep.simxSynchronousTrigger(self.connection_id)
+            #err = vrep.simxSetJointTargetVelocity(self.connection_id, self.uarm_gripper_motor_handle1, 0.02, vrep.simx_opmode_streaming)
+            actions[act_num]()
+            vrep.simxSynchronousTrigger(self.connection_id)
+            self.current_step += 1
 
     def is_episode_finished(self):
-        return False
+        return (self.current_step == self.episode_length)
 
     def rotate_clockwise(self):
         # print("clockwise")
