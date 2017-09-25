@@ -19,6 +19,7 @@ class VRepEnvironment():
         self.eps = 0.1
         self.episode_length = 500
         self.current_step = 0
+        self.port = port
         self.connect_to_vrep()
         self.load_scene()
 
