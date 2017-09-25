@@ -10,7 +10,7 @@ from v_rep_environment import *
 max_episode_length = 300
 gamma = .99  # discount rate for advantage estimation and reward discounting
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
-a_size = 6  # clock/counterclock, up/down, back/forth
+a_size = 6  # clockwise/counterclockwise, up/down, back/forth
 load_model = False
 model_path = './model'
 
@@ -30,8 +30,14 @@ with tf.device("/cpu:0"):
     num_workers = 1  # multiprocessing.cpu_count()  # Set workers ot number of available CPU threads
     workers = []
     # Create worker classes
+    vrep.simxFinish(-1)  # just in case, close all opened connections
+
     for i in range(num_workers):
-        env = VRepEnvironment()
+        port = 19997 + i
+        bashCommand = 'nohup ./V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep -q -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_FALSE &'
+        os.system(bashCommand)
+        sleep(10)
+        env = VRepEnvironment(port) #Several enviroments??
         workers.append(Worker(env, i, s_size, a_size, trainer, model_path, global_episodes))
     saver = tf.train.Saver(max_to_keep=5)
 

@@ -2,11 +2,12 @@ import vrep
 import time
 import numpy as np
 import sys
+import os
 
 
 class VRepEnvironment():
 
-    def __init__(self):
+    def __init__(self, port):
         self.connection_id = -1
         self.uarm_motor1_handle = -1
         self.uarm_motor2_handle = -1
@@ -16,25 +17,35 @@ class VRepEnvironment():
         self.uarm_gripper_motor_handle2 = -1
         self.uarm_camera_handle = -1
         self.eps = 0.1
+        self.port = port
         self.connect_to_vrep()
+        self.load_scene()
+
 
     def connect_to_vrep(self):
-        vrep.simxFinish(-1)  # just in case, close all opened connections
-        self.connection_id = vrep.simxStart('127.0.0.1',19997,True,True,5000,5)
+
+        self.connection_id = vrep.simxStart('127.0.0.1', self.port,True,True,5000,5)
+
+
         if self.connection_id != -1:
             print('Connected to continuous remote API server service')
         else:
-            print('Connection not succesfull')
-            raise RuntimeError('could not connect to V-REP')
+            print('Connection not successful')
+            raise RuntimeError('Could not connect to V-REP')
 
         vrep.simxSynchronous(self.connection_id, True)
         self.get_handles()
+
+    def load_scene(self):
+        vrep.simxLoadScene(self.connection_id, 'uarmGripper.ttt', 1, vrep.simx_opmode_blocking)
+        print("Scene loaded")
+
 
     def disconnect_from_vrep(self):
         vrep.simxFinish(self.connection_id)
 
     def get_handles(self):
-        print("Getting hanles")
+        print("Getting handles")
         # Move one joint
         err, self.uarm_motor1_handle = vrep.simxGetObjectHandle(self.connection_id, 'uarm_motor1',
                                                                  vrep.simx_opmode_blocking)  # Position from 0 to 3.14
@@ -63,7 +74,7 @@ class VRepEnvironment():
     def reset(self):
         return_code = vrep.simxStopSimulation(self.connection_id, vrep.simx_opmode_blocking)
         time.sleep(0.1)
-        print("Env has been reset")
+        print("Environment has been reset")
 
     def new_episode(self):
         self.reset()
