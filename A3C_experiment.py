@@ -13,6 +13,8 @@ s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
 load_model = False
 model_path = './model'
+vrep_exec_path = '../V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep'
+vrep_scene_path = '../../../../ObjectManipulation/uarmGripper.ttt'
 
 tf.reset_default_graph()
 
@@ -34,9 +36,12 @@ with tf.device("/cpu:0"):
 
     for i in range(num_workers):
         port = 19997 + i
-        bashCommand = 'nohup ./V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep -q -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_FALSE &'
+        bashCommand = 'nohup ' + vrep_exec_path + ' -q -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + vrep_scene_path + ' &'
+        print(bashCommand)
         os.system(bashCommand)
-        sleep(10)
+        print("sleep")
+        sleep(5)
+        print("woke up")
         env = VRepEnvironment(port) #Several enviroments??
         workers.append(Worker(env, i, s_size, a_size, trainer, model_path, global_episodes))
     saver = tf.train.Saver(max_to_keep=5)

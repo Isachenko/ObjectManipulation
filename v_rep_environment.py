@@ -21,7 +21,7 @@ class VRepEnvironment():
         self.current_step = 0
         self.port = port
         self.connect_to_vrep()
-        self.load_scene()
+        #self.load_scene()
 
 
     def connect_to_vrep(self):
