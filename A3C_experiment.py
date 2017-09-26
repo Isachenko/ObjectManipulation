@@ -6,6 +6,8 @@ import threading
 from time import sleep
 from worker import Worker
 from v_rep_environment import *
+import subprocess
+import shlex
 
 max_episode_length = 500
 gamma = .99  # discount rate for advantage estimation and reward discounting
@@ -13,8 +15,8 @@ s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
 load_model = True
 model_path = './model'
-vrep_exec_path = '/Users/Khmer/Developer/ObjectManipulation/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep'
-vrep_scene_path = '/Users/Khmer/Developer/ObjectManipulation/uarmGripper.ttt'
+vrep_exec_path = '../V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep'
+vrep_scene_path = '../../../../ObjectManipulation/uarmGripper.ttt'
 
 tf.reset_default_graph()
 
@@ -29,23 +31,20 @@ with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes', trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
     master_network = AC_Network(s_size, a_size, 'global', None)  # Generate global network
-    num_workers = 1  # multiprocessing.cpu_count()  # Set workers ot number of available CPU threads
+    num_workers = 2  # multiprocessing.cpu_count()  # Set workers ot number of available CPU threads
     workers = []
     # Create worker classes
     vrep.simxFinish(-1)  # just in case, close all opened connections
-    bashCommandKillAll = "sudo killall vrep"
-    #os.system(bashCommandKillAll)
-    bashCommandPassword = " "
-    #os.system(bashCommandPassword)
-    os.system('echo %s|sudo -S %s' % (bashCommandPassword, bashCommandKillAll))
 
 
 
     for i in range(num_workers):
         port = 19997 + i
-        bashCommand = 'nohup ' + vrep_exec_path + ' -h -q -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + vrep_scene_path + ' &'
-        print(bashCommand)
-        os.system(bashCommand)
+        bash_command = vrep_exec_path + ' -h -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + vrep_scene_path
+        args = shlex.split(bash_command)
+        print(bash_command)
+        print(args)
+        p = subprocess.Popen(args)
         print("sleep")
         sleep(5)
         print("woke up")
