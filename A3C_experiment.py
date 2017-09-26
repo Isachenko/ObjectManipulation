@@ -13,8 +13,8 @@ s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
 load_model = False
 model_path = './model'
-vrep_exec_path = '../V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep'
-vrep_scene_path = '../../../../ObjectManipulation/uarmGripper.ttt'
+vrep_exec_path = '/Users/Khmer/Developer/ObjectManipulation/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep'
+vrep_scene_path = '/Users/Khmer/Developer/ObjectManipulation/uarmGripper.ttt'
 
 tf.reset_default_graph()
 
@@ -33,10 +33,17 @@ with tf.device("/cpu:0"):
     workers = []
     # Create worker classes
     vrep.simxFinish(-1)  # just in case, close all opened connections
+    bashCommandKillAll = "sudo killall vrep"
+    #os.system(bashCommandKillAll)
+    bashCommandPassword = " "
+    #os.system(bashCommandPassword)
+    os.system('echo %s|sudo -S %s' % (bashCommandPassword, bashCommandKillAll))
+
+
 
     for i in range(num_workers):
         port = 19997 + i
-        bashCommand = 'nohup ' + vrep_exec_path + ' -q -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + vrep_scene_path + ' &'
+        bashCommand = 'nohup ' + vrep_exec_path + ' -h -q -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + vrep_scene_path + ' &'
         print(bashCommand)
         os.system(bashCommand)
         print("sleep")
