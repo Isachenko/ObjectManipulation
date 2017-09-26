@@ -132,7 +132,7 @@ class Worker():
                     s = s1
                     total_steps += 1
                     episode_step_count += 1
-                    #print("step: ", episode_step_count, "/", max_episode_length, " reward: ", r)
+                    print("step: ", episode_step_count, "/", max_episode_length, " reward: ", r)
 
                     # If the episode hasn't ended, but the experience buffer is full, then we
                     # make an update step using that experience rollout.
@@ -158,14 +158,15 @@ class Worker():
                     v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0)
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
-                if episode_count % 5 == 0 and episode_count != 0:
-                    if self.name == 'worker_0' and episode_count % 25 == 0:
+                print("Episode count:",episode_count)
+                if episode_count % 2 == 0 and episode_count != 0:
+                    if self.name == 'worker_0' and episode_count % 2 == 0:
                         time_per_step = 0.05
                         images = np.array(episode_frames)
                         print(images)
                         make_gif(images, './frames/image' + str(episode_count) + '.gif',
                                  duration=len(images) * time_per_step, true_image=True, salience=False)
-                    if episode_count % 250 == 0 and self.name == 'worker_0':
+                    if episode_count % 3 == 0 and self.name == 'worker_0':
                         saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
                         print("Saved Model")
 
