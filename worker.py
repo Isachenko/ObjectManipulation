@@ -1,9 +1,7 @@
-from helper import *
 from ac_network import AC_Network
-from utils import *
-import matplotlib.pyplot as plt
-from PIL import Image as I
-import time
+from utils.helper import *
+from utils.utils import *
+
 
 class Worker():
     def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):

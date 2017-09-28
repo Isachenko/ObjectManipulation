@@ -1,13 +1,16 @@
+import sys
 import time
+import shlex
+import subprocess
+
 import numpy as np
+
 from config import *
 
-import sys
-sys.path.append(vrep_api_path)
-print(sys.path)
-
+sys.path.append(VREP_API_PATH)
 import vrep
 
+FIRST_VREP_PORT = 19997 #port for first V_REP connection
 
 class VRepEnvironment():
 
@@ -24,6 +27,15 @@ class VRepEnvironment():
         self.episode_length = 500
         self.current_step = 0
         self.port = port
+
+        bash_command = VREP_EXE_PATH + ' -h -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + VREP_SCENE_PATH
+        args = shlex.split(bash_command)
+        print(bash_command)
+        p = subprocess.Popen(args)
+        print("sleep")
+        time.sleep(2)
+        print("woke up")
+
         self.connect_to_vrep()
         #self.load_scene()
 
