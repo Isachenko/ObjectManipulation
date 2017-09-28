@@ -1,8 +1,12 @@
-import vrep
 import time
 import numpy as np
+from config import *
+
 import sys
-import os
+sys.path.append(vrep_api_path)
+print(sys.path)
+
+import vrep
 
 
 class VRepEnvironment():
@@ -26,7 +30,7 @@ class VRepEnvironment():
 
     def connect_to_vrep(self):
 
-        self.connection_id = vrep.simxStart('127.0.0.1', self.port,True,True,5000,5)
+        self.connection_id = vrep.simxStart('127.0.0.1', self.port, True, True, 5000, 5)
 
 
         if self.connection_id != -1:
@@ -50,16 +54,16 @@ class VRepEnvironment():
         print("Getting handles")
         # Move one joint
         err, self.uarm_motor1_handle = vrep.simxGetObjectHandle(self.connection_id, 'uarm_motor1',
-                                                                 vrep.simx_opmode_blocking)  # Position from 0 to 3.14
+                                                                vrep.simx_opmode_blocking)  # Position from 0 to 3.14
 
         err, self.uarm_motor2_handle = vrep.simxGetObjectHandle(self.connection_id, 'uarm_motor2',
-                                                                 vrep.simx_opmode_blocking)
+                                                                vrep.simx_opmode_blocking)
 
         err, self.uarm_motor3_handle = vrep.simxGetObjectHandle(self.connection_id, 'uarm_motor3',
-                                                                 vrep.simx_opmode_blocking)
+                                                                vrep.simx_opmode_blocking)
 
         err, self.uarm_motor4_handle = vrep.simxGetObjectHandle(self.connection_id, 'uarm_motor4',
-                                                                 vrep.simx_opmode_blocking)
+                                                                vrep.simx_opmode_blocking)
 
         err, self.uarm_gripper_motor_handle1 = vrep.simxGetObjectHandle(self.connection_id, 'uarmGripper_motor1Method2',
                                                                         vrep.simx_opmode_blocking)
@@ -68,7 +72,7 @@ class VRepEnvironment():
                                                                         vrep.simx_opmode_blocking)
 
         err, self.uarm_camera_handle = vrep.simxGetObjectHandle(self.connection_id, 'Vision_sensor',
-                                                                        vrep.simx_opmode_blocking)
+                                                                vrep.simx_opmode_blocking)
 
         err, self.sphere_handle = vrep.simxGetObjectHandle(self.connection_id, 'Sphere', vrep.simx_opmode_blocking)
         print("Got handles")
@@ -101,12 +105,18 @@ class VRepEnvironment():
     def get_state(self):
         joints_positions = []
 
-        joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)) # counter/clockwise
-        joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer))
-        joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer))
-        joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_motor4_handle, vrep.simx_opmode_buffer))
-        joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle1, vrep.simx_opmode_buffer))
-        joints_positions.append(vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_buffer))
+        joints_positions.append(
+            vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)) # counter/clockwise
+        joints_positions.append(
+            vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer))
+        joints_positions.append(
+            vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer))
+        joints_positions.append(
+            vrep.simxGetJointPosition(self.connection_id, self.uarm_motor4_handle, vrep.simx_opmode_buffer))
+        joints_positions.append(
+            vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle1, vrep.simx_opmode_buffer))
+        joints_positions.append(
+            vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_buffer))
 
         err, res, image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 256, vrep.simx_opmode_buffer)
         if image == []:

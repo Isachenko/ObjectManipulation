@@ -1,16 +1,18 @@
-import vrep
+import random
 import sys
 import time
-import math
-import random
+
 import tensorflow as tf
+
+from vrep_api import vrep
+
 print(tf.__version__)
 
 eps = 0.1
 
 vrep.simxFinish(-1) # just in case, close all opened connections
 
-contiousID=vrep.simxStart('127.0.0.1',19997,True,True,5000,5) # Connect to V-REP
+contiousID= vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5) # Connect to V-REP
 if contiousID!=-1:
    print ('Connected to continuous remote API server service')
 else:
@@ -119,7 +121,7 @@ error_code, uarmGripper_motor_handle2 = vrep.simxGetObjectHandle(contiousID, 'ua
 
 epochs_number = 5
 max_t = 50
-vrep.simxSynchronous(contiousID,True)
+vrep.simxSynchronous(contiousID, True)
 for epoch in range(epochs_number):
     return_code = vrep.simxStartSimulation(contiousID, vrep.simx_opmode_blocking)
     vrep.simxSynchronousTrigger(contiousID)

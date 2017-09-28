@@ -26,11 +26,12 @@
 #
 # This file was automatically created for V-REP release V3.4.0 rev. 1 on April 5th 2017
 
+import ctypes as ct
+import os
 import platform
 import struct
 import sys
-import os
-import ctypes as ct
+
 from vrepConst import *
 
 #load library

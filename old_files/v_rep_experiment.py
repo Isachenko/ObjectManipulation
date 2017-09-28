@@ -1,4 +1,3 @@
-import vrep
 import time
 
 class VRepExperiment():

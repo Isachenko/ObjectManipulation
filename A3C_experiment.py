@@ -1,15 +1,16 @@
-import tensorflow as tf
-import os
-from ac_network import AC_Network
 import multiprocessing
+import os
+import shlex
+import subprocess
 import threading
 from time import sleep
-from worker import Worker
-from v_rep_environment import *
-import subprocess
-import shlex
-from config import *
 
+import tensorflow as tf
+
+from ac_network import AC_Network
+from config import *
+from v_rep_environment import *
+from worker import Worker
 
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
