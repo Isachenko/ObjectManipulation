@@ -1,7 +1,9 @@
 from helper import *
 from ac_network import AC_Network
 from utils import *
-
+import matplotlib.pyplot as plt
+from PIL import Image as I
+import time
 
 class Worker():
     def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):
@@ -46,6 +48,11 @@ class Worker():
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
         # End Doom set-up
         self.env = game
+        #self.im = I.new("L", (84, 84), "white")
+        #self.fig = plt.figure(1)
+        #self.fig.canvas.set_window_title("ba")
+        #self.plotimg = plt.imshow(self.im, origin='lower')
+        #time.sleep(1)
 
     def train(self, rollout, sess, gamma, bootstrap_value):
         rollout = np.array(rollout)
@@ -98,7 +105,7 @@ class Worker():
 
                 self.env.new_episode()
                 s = self.env.get_state().image
-                image_to_show = np.reshape(s, [84,84])
+                image_to_show = np.reshape(s, (84,84))
                 episode_frames.append(image_to_show)
                 s = process_frame(s)
                 rnn_state = self.local_AC.state_init
@@ -118,9 +125,18 @@ class Worker():
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
-                        image_to_show = np.reshape(s, [84,84])
+                        image_to_show = np.reshape(s1, (84,84))
+                        #print("first image:", image_to_show)
                         episode_frames.append(image_to_show)
-                        episode_frames.append(image_to_show)
+                        #self.im = I.frombuffer("L", (84, 84), image_to_show, "raw", "L", 0, 1)
+                        # Update the image
+                        #self.plotimg.set_data(self.im)
+                        # Refresh the display
+                        #plt.draw()
+                        # The mandatory pause ! (or it'll not work)
+                        #plt.pause(0.5)
+                        #plt.show()
+
                         s1 = process_frame(s1)
                     else:
                         s1 = s

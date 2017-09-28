@@ -112,13 +112,17 @@ class VRepEnvironment():
         if image == []:
             image = np.zeros([84*84])
         else:
+            #print("image before: ", image)
             image = np.asarray(image)
+            #print("image after: ", image)
 
         #print("image: ")
 
         state = VrepState()
         state.joints = joints_positions
         state.image = image
+
+        #print("image after: ", image)
 
         return state
 

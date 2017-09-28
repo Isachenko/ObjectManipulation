@@ -8,15 +8,12 @@ from worker import Worker
 from v_rep_environment import *
 import subprocess
 import shlex
+from config import *
 
-max_episode_length = 500
-gamma = .99  # discount rate for advantage estimation and reward discounting
+
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
-load_model = True
-model_path = './model'
-vrep_exec_path = '../V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/vrep'
-vrep_scene_path = '../../../../ObjectManipulation/uarmGripper.ttt'
+
 
 tf.reset_default_graph()
 
@@ -31,13 +28,11 @@ with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes', trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
     master_network = AC_Network(s_size, a_size, 'global', None)  # Generate global network
-    num_workers = 2  # multiprocessing.cpu_count()  # Set workers ot number of available CPU threads
+    if num_workers == -1:
+        num_workers = multiprocessing.cpu_count()  # Set workers ot number of available CPU threads
     workers = []
     # Create worker classes
     vrep.simxFinish(-1)  # just in case, close all opened connections
-
-
-
     for i in range(num_workers):
         port = 19997 + i
         bash_command = vrep_exec_path + ' -h -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + vrep_scene_path
@@ -54,7 +49,7 @@ with tf.device("/cpu:0"):
 
 with tf.Session() as sess:
     coord = tf.train.Coordinator()
-    if load_model == True:
+    if load_model:
         print('Loading Model...')
         ckpt = tf.train.get_checkpoint_state(model_path)
         saver.restore(sess, ckpt.model_checkpoint_path)
