@@ -4,10 +4,10 @@
 #SBATCH --mail-user=adrianalvarez15@gmail.com
 #SBATCH --output=job-%j.log
 #SBATCH --mem=60GB#(This is max available RAM)
+cd ObjectManipulation
 module load git/2.13.2-foss-2016a
 module load Python/3.5.2-foss-2016a
 module load tensorflow/1.2.0-foss-2016a-Python-3.5.2
-matplotlib/1.5.3-foss-2016a-Python-3.5.2
+module load matplotlib/1.5.3-foss-2016a-Python-3.5.2
 module load V-REP/3.4.0
-git clone https://github.com/Isachenko/ObjectManipulation.git
-python A3C_experiment.py
+python3 A3C_experiment.py

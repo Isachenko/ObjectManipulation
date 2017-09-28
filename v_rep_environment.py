@@ -28,12 +28,12 @@ class VRepEnvironment():
         self.current_step = 0
         self.port = port
 
-        bash_command = VREP_EXE_PATH + ' -h -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + VREP_SCENE_PATH
+        bash_command = VREP_EXE_PATH + ' -h -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + VREP_SCENE_PATH + ' > /home/s3276368/ObjectManipulation/vrep_out.txt'
         args = shlex.split(bash_command)
         print(bash_command)
         p = subprocess.Popen(args)
         print("sleep")
-        time.sleep(2)
+        time.sleep(5)
         print("woke up")
 
         self.connect_to_vrep()
