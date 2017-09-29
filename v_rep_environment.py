@@ -88,8 +88,10 @@ class VRepEnvironment():
 
         err, self.uarm_camera_handle = vrep.simxGetObjectHandle(self.connection_id, 'Vision_sensor',
                                                                 vrep.simx_opmode_blocking)
+        print(self.uarm_camera_handle)
 
-        err, self.sphere_handle = vrep.simxGetObjectHandle(self.connection_id, 'Sphere', vrep.simx_opmode_blocking)
+        err, self.target_object_handle = vrep.simxGetObjectHandle(self.connection_id, 'Cuboid0', vrep.simx_opmode_blocking)
+        print(self.target_object_handle)
         print("Got handles")
 
     def reset(self):
@@ -112,7 +114,7 @@ class VRepEnvironment():
         vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle1, vrep.simx_opmode_streaming)
         vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_streaming)
         vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_streaming)
-        vrep.simxGetObjectVelocity(self.connection_id, self.sphere_handle, vrep.simx_opmode_streaming)
+        vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_streaming)
 
         print("Env has been started")
         # returnCode, position = vrep.simxGetObjectPosition(self.connection_id, sphere_handle, -1, vrep.simx_opmode_streaming)
@@ -154,7 +156,7 @@ class VRepEnvironment():
         return state
 
     def get_reward(self):
-        err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.sphere_handle, vrep.simx_opmode_buffer)
+        err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
         reward = round(np.linalg.norm(np.array(linear_v)), 2)
         print(reward)
         return reward
