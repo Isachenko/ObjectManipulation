@@ -1,6 +1,8 @@
 from ac_network import AC_Network
 from utils.helper import *
 from utils.utils import *
+from config import *
+import scipy.misc
 
 
 class Worker():
@@ -124,16 +126,7 @@ class Worker():
                     if d == False:
                         s1 = self.env.get_state().image
                         image_to_show = np.reshape(s1, (84,84))
-                        #print("first image:", image_to_show)
                         episode_frames.append(image_to_show)
-                        #self.im = I.frombuffer("L", (84, 84), image_to_show, "raw", "L", 0, 1)
-                        # Update the image
-                        #self.plotimg.set_data(self.im)
-                        # Refresh the display
-                        #plt.draw()
-                        # The mandatory pause ! (or it'll not work)
-                        #plt.pause(0.5)
-                        #plt.show()
 
                         s1 = process_frame(s1)
                     else:
@@ -173,14 +166,17 @@ class Worker():
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
                 print("Episode count:",episode_count)
-                if episode_count % 2 == 0 and episode_count != 0:
-                    if self.name == 'worker_0' and episode_count % 2 == 0:
+                if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
+                    if self.name == 'worker_0' and episode_count % IMAGE_SAVE_TIME_STEP == 0:
                         time_per_step = 0.05
                         images = np.array(episode_frames)
                         print(images)
-                        make_gif(images, './frames/image' + str(episode_count) + '.gif',
+                        make_gif(images, frames_path + '/image' + str(episode_count) + '.gif',
                                  duration=len(images) * time_per_step, true_image=True, salience=False)
-                    if episode_count % 3 == 0 and self.name == 'worker_0':
+                        #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
+                        #scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
+
+                    if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.name == 'worker_0':
                         saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
                         print("Saved Model")
 

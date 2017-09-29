@@ -49,7 +49,7 @@ with tf.Session() as sess:
     # Start the "work" process for each worker in a separate threat.
     worker_threads = []
     for worker in workers:
-        worker_work = lambda: worker.work(max_episode_length, gamma, sess, coord, saver)
+        worker_work = lambda: worker.work(MAX_EPISODE_LENGTH, gamma, sess, coord, saver)
         t = threading.Thread(target=(worker_work))
         t.start()
         print("Thread started")

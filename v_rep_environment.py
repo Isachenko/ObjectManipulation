@@ -24,16 +24,19 @@ class VRepEnvironment():
         self.uarm_gripper_motor_handle2 = -1
         self.uarm_camera_handle = -1
         self.eps = 0.1
-        self.episode_length = 500
+        self.episode_length = MAX_EPISODE_LENGTH
         self.current_step = 0
         self.port = port
 
-        bash_command = VREP_EXE_PATH + ' -h -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + VREP_SCENE_PATH + ' > /home/s3276368/ObjectManipulation/vrep_out.txt'
+        headless = ""
+        if VREP_HEADLESS:
+            headless = " -h"
+        bash_command = VREP_EXE_PATH + headless + ' -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + VREP_SCENE_PATH
         args = shlex.split(bash_command)
         print(bash_command)
         p = subprocess.Popen(args)
         print("sleep")
-        time.sleep(5)
+        time.sleep(2)
         print("woke up")
 
         self.connect_to_vrep()
@@ -108,7 +111,7 @@ class VRepEnvironment():
         vrep.simxGetJointPosition(self.connection_id, self.uarm_motor4_handle, vrep.simx_opmode_streaming)
         vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle1, vrep.simx_opmode_streaming)
         vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_streaming)
-        vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 0, vrep.simx_opmode_streaming)
+        vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_streaming)
         vrep.simxGetObjectVelocity(self.connection_id, self.sphere_handle, vrep.simx_opmode_streaming)
 
         print("Env has been started")
@@ -130,15 +133,17 @@ class VRepEnvironment():
         joints_positions.append(
             vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_buffer))
 
-        err, res, image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 256, vrep.simx_opmode_buffer)
+        err, res, image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_buffer)
+        #print("just get image")
+        #print(res, len(image), image)
         if image == []:
-            image = np.zeros([84*84])
+            image = np.zeros([84*84], dtype=np.uint8)
         else:
-            #print("image before: ", image)
-            image = np.asarray(image)
-            #print("image after: ", image)
+            image = np.array(image, dtype=np.uint8)
 
         #print("image: ")
+        #print(image)
+
 
         state = VrepState()
         state.joints = joints_positions
