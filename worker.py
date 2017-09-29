@@ -139,7 +139,7 @@ class Worker():
                     s = s1
                     total_steps += 1
                     episode_step_count += 1
-                    print("step: ", episode_step_count, "/", max_episode_length, " reward: ", r)
+                    #print("step: ", episode_step_count, "/", max_episode_length, " reward: ", r)
 
                     # If the episode hasn't ended, but the experience buffer is full, then we
                     # make an update step using that experience rollout.
@@ -165,12 +165,11 @@ class Worker():
                     v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0)
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
-                print("Episode count:",episode_count)
+                #print("Episode count:",episode_count)
                 if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
                     if self.name == 'worker_0' and episode_count % IMAGE_SAVE_TIME_STEP == 0:
                         time_per_step = 0.05
                         images = np.array(episode_frames)
-                        print(images)
                         make_gif(images, frames_path + '/image' + str(episode_count) + '.gif',
                                  duration=len(images) * time_per_step, true_image=True, salience=False)
                         #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
@@ -179,6 +178,7 @@ class Worker():
                     if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.name == 'worker_0':
                         saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
                         print("Saved Model")
+
 
                     mean_reward = np.mean(self.episode_rewards[-5:])
                     mean_length = np.mean(self.episode_lengths[-5:])
@@ -195,6 +195,8 @@ class Worker():
                     self.summary_writer.add_summary(summary, episode_count)
 
                     self.summary_writer.flush()
+
+                    print("episode: ", episode_count, "mean reward: ", mean_reward)
                 if self.name == 'worker_0':
                     sess.run(self.increment)
                 episode_count += 1

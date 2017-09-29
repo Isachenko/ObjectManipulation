@@ -98,7 +98,7 @@ class VRepEnvironment():
         return_code = vrep.simxStopSimulation(self.connection_id, vrep.simx_opmode_blocking)
         self.current_step = 0
         time.sleep(0.1)
-        print("Environment has been reset")
+        #print("Environment has been reset")
 
     def new_episode(self):
         self.reset()
@@ -116,7 +116,7 @@ class VRepEnvironment():
         vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_streaming)
         vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_streaming)
 
-        print("Env has been started")
+        #print("Env has been started")
         # returnCode, position = vrep.simxGetObjectPosition(self.connection_id, sphere_handle, -1, vrep.simx_opmode_streaming)
 
     def get_state(self):
@@ -158,7 +158,7 @@ class VRepEnvironment():
     def get_reward(self):
         err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
         reward = round(np.linalg.norm(np.array(linear_v)), 2)
-        print(reward)
+        #print(reward)
         return reward
 
     def make_action(self, action):
