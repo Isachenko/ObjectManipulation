@@ -11,15 +11,20 @@ VREP_HEADLESS = True
 
 load_model = False
 MAX_EPISODE_LENGTH = 200
+MAX_NUMBER_OF_EPISODES = 1000
 gamma = .99  # discount rate for advantage estimation and reward discounting
 num_workers = 1
 
 #statistics save params
-model_path = './model'
-frames_path = './frames'
+results_path = "./results"
+model_path = results_path + '/model'
+frames_path = results_path + '/frames'
+statistics_path = results_path + '/train_'
+archive_path = './archive'
 IMAGE_SAVE_TIME_STEP = 10
 STATISTICS_SAVE_TIME_STEP = 10
 MODEL_SAVE_TIME_STEP = 100
+
 
 from local_config import *
 print(VREP_EXE_PATH)

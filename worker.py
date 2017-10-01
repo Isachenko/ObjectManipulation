@@ -16,7 +16,7 @@ class Worker():
         self.episode_rewards = []
         self.episode_lengths = []
         self.episode_mean_values = []
-        self.summary_writer = tf.summary.FileWriter("train_" + str(self.number))
+        self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
         self.local_AC = AC_Network(s_size, a_size, self.name, trainer)
@@ -46,13 +46,7 @@ class Worker():
         # game.set_mode(Mode.PLAYER)
         # game.init()
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
-        # End Doom set-up
         self.env = game
-        #self.im = I.new("L", (84, 84), "white")
-        #self.fig = plt.figure(1)
-        #self.fig.canvas.set_window_title("ba")
-        #self.plotimg = plt.imshow(self.im, origin='lower')
-        #time.sleep(1)
 
     def train(self, rollout, sess, gamma, bootstrap_value):
         rollout = np.array(rollout)
@@ -93,7 +87,7 @@ class Worker():
         episode_count = sess.run(self.global_episodes)
         total_steps = 0
         print("Starting worker " + str(self.number))
-        with sess.as_default(), sess.graph.as_default():
+        with sess.as_default(), sess.graph.as_default(), coord.stop_on_exception():
             while not coord.should_stop():
                 sess.run(self.update_local_ops)
                 episode_buffer = []
@@ -139,7 +133,6 @@ class Worker():
                     s = s1
                     total_steps += 1
                     episode_step_count += 1
-                    #print("step: ", episode_step_count, "/", max_episode_length, " reward: ", r)
 
                     # If the episode hasn't ended, but the experience buffer is full, then we
                     # make an update step using that experience rollout.
@@ -196,7 +189,15 @@ class Worker():
 
                     self.summary_writer.flush()
 
-                    print("episode: ", episode_count, "mean reward: ", mean_reward)
+                    print(self.name, ": episode: ", episode_count, "mean reward: ", mean_reward)
                 if self.name == 'worker_0':
                     sess.run(self.increment)
                 episode_count += 1
+
+                if episode_count == MAX_NUMBER_OF_EPISODES:
+                    self.env.__del__()
+                    if self.name == 'worker_0':
+                        coord.request_stop()
+                    else:
+                        coord.wait_for_stop()
+                    print(self.name, ": work finished")

@@ -1,6 +1,8 @@
 import multiprocessing
 import threading
 from time import sleep
+import datetime
+
 
 import tensorflow as tf
 
@@ -8,11 +10,16 @@ from ac_network import AC_Network
 from v_rep_environment import *
 from worker import Worker
 
+import shutil
+
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
 
 
 tf.reset_default_graph()
+
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
 
 if not os.path.exists(model_path):
     os.makedirs(model_path)
@@ -26,7 +33,7 @@ with tf.device("/cpu:0"):
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
     master_network = AC_Network(s_size, a_size, 'global', None)  # Generate global network
     if num_workers == -1:
-        num_workers = multiprocessing.cpu_count()  # Set workers ot number of available CPU threads
+        num_workers = multiprocessing.cpu_count()  # Set workers at number of available CPU threads
     print("Number of workers: ", num_workers)
     workers = []
     # Create worker classes
@@ -56,3 +63,13 @@ with tf.Session() as sess:
         sleep(0.5)
         worker_threads.append(t)
     coord.join(worker_threads)
+
+#After every thread stops
+now = datetime.datetime.now()
+new_name = results_path + now.strftime("_%d-%m-%Y_%H-%M")
+shutil.move(results_path, new_name)
+
+if not os.path.exists(archive_path):
+    os.makedirs(archive_path)
+
+shutil.move(new_name, archive_path)
