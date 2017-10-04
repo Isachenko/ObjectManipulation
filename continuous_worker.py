@@ -5,9 +5,9 @@ from config import *
 import scipy.misc
 
 
-class Worker():
+class ContinuousWorker():
     def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):
-        self.name = "worker_" + str(name)
+        self.name = "c_worker_" + str(name)
         self.number = name
         self.model_path = model_path
         self.trainer = trainer
