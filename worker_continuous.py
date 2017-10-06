@@ -96,7 +96,7 @@ class ContinuousWorker():
                         explore = np.random.normal(0.1, 0.05, 3)
                         a = a + explore
 
-                    self.env.make_action(self.actions[a])
+                    self.env.make_action_continuous(a)
                     r = self.env.get_reward()
                     d = self.env.is_episode_finished()
                     if d == False:
