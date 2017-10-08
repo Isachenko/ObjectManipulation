@@ -23,11 +23,15 @@ class AC_Network():
             c_init = np.zeros((1, lstm_cell.state_size.c), np.float32)
             h_init = np.zeros((1, lstm_cell.state_size.h), np.float32)
             self.state_init = [c_init, h_init]
+            #print("stat inti", self.state_init)
+            #print("lstm state size", lstm_cell.state_size.c, lstm_cell.state_size.h)
             c_in = tf.placeholder(tf.float32, [1, lstm_cell.state_size.c])
             h_in = tf.placeholder(tf.float32, [1, lstm_cell.state_size.h])
             self.state_in = (c_in, h_in)
             rnn_in = tf.expand_dims(hidden, [0])
             step_size = tf.shape(self.imageIn)[:1]
+            #print("step", step_size)
+            #print("shape", tf.shape(self.imageIn))
             state_in = tf.contrib.rnn.LSTMStateTuple(c_in, h_in)
             lstm_outputs, lstm_state = tf.nn.dynamic_rnn(
                 lstm_cell, rnn_in, initial_state=state_in, sequence_length=step_size,
