@@ -6,9 +6,9 @@ import datetime
 
 import tensorflow as tf
 
-from ac_network import AC_Network
+from ac_network_continuous import ACNetworkContinuous
 from v_rep_environment import *
-from worker import Worker
+from worker_continuous import WorkerContinuous
 
 import shutil
 
@@ -31,7 +31,7 @@ if not os.path.exists(frames_path):
 with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes', trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    master_network = AC_Network(s_size, a_size, 'global', None)  # Generate global network
+    master_network = ACNetworkContinuous(s_size, a_size, 'global', None)  # Generate global network
     if num_workers == -1:
         num_workers = multiprocessing.cpu_count()  # Set workers at number of available CPU threads
     print("Number of workers: ", num_workers)
@@ -40,7 +40,7 @@ with tf.device("/cpu:0"):
     for i in range(num_workers):
         port = FIRST_VREP_PORT + i
         env = VRepEnvironment(port)
-        workers.append(Worker(env, i, s_size, a_size, trainer, model_path, global_episodes))
+        workers.append(WorkerContinuous(env, i, s_size, a_size, trainer, model_path, global_episodes))
     saver = tf.train.Saver(max_to_keep=5)
 
 with tf.Session() as sess:

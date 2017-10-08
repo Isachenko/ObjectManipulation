@@ -1,4 +1,4 @@
-from ac_network import AC_Network
+from ac_network_continuous import ACNetworkContinuous
 from utils.helper import *
 from utils.utils import *
 from config import *
@@ -7,7 +7,7 @@ import numpy as np
 import scipy.misc
 
 
-class ContinuousWorker():
+class WorkerContinuous():
     def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):
         self.name = "c_worker_" + str(name)
         self.number = name
@@ -21,7 +21,7 @@ class ContinuousWorker():
         self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
-        self.local_AC = AC_Network(s_size, a_size, self.name, trainer)
+        self.local_AC = ACNetworkContinuous(s_size, a_size, self.name, trainer)
         self.update_local_ops = update_target_graph('global', self.name)
 
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
@@ -92,9 +92,9 @@ class ContinuousWorker():
                                    self.local_AC.state_in[1]: rnn_state[1]})
 
                     #Random sometimes and add noise
-                    if random.uniform(0, 1) < 0.01:
-                        explore = np.random.normal(0.1, 0.05, 3)
-                        a = a + explore
+                    #if random.uniform(0, 1) < 0.01:
+                    #    explore = np.random.normal(0.1, 0.05, 3)
+                    #    a = a + explore
 
                     self.env.make_action_continuous(a)
                     r = self.env.get_reward()

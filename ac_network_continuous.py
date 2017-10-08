@@ -4,7 +4,7 @@ import tensorflow.contrib.slim as slim
 from utils import utils
 
 
-class AC_Network():
+class ACNetworkContinuous():
     def __init__(self, s_size, a_size, scope, trainer):
         with tf.variable_scope(scope):
             # Input and visual encoding layers
@@ -51,8 +51,9 @@ class AC_Network():
                 self.actions = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
+                print(self.actions)
+                self.responsible_outputs = tf.reduce_sum(self.actions, [1]) #think more
 
-                self.responsible_outputs = tf.reduce_sum(self.policy * self.actions, [1])
 
                 # Loss functions
                 self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))

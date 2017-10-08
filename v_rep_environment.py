@@ -167,10 +167,10 @@ class VRepEnvironment():
     def make_action_continuous(self,value):
         if self.current_step < self.episode_length:
             value = value - 0.5
-            act_num = action.index(True)
-            actions = [self.rotate_clockwise, self.rotate_front, self.rotate_up]
+            print("value", value)
+            actions = [self.rotate_clockwise_continuous, self.rotate_front_continuous, self.rotate_up_continuous]
             for i, action in enumerate(actions):
-                action(value[i])
+                action(value[0][i])
 
             vrep.simxSynchronousTrigger(self.connection_id)
             self.current_step += 1
@@ -189,7 +189,7 @@ class VRepEnvironment():
     def is_episode_finished(self):
         return (self.current_step == self.episode_length)
 
-    def rotate_clockwise(self,value):
+    def rotate_clockwise_continuous(self,value):
         # print("clockwise")
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle,
                                                              vrep.simx_opmode_buffer)
@@ -213,7 +213,7 @@ class VRepEnvironment():
         new_pos = current_pos + self.eps
         retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
 
-    def rotate_front(self,value):
+    def rotate_front_continuous(self,value):
         # print("front")
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer)
         # print(current_pos)
@@ -244,7 +244,7 @@ class VRepEnvironment():
             new_pos = 1.9
         retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
 
-    def rotate_up(self, value):
+    def rotate_up_continuous(self, value):
         # print("up")
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer)
         # print(current_pos)
