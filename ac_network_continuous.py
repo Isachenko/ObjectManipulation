@@ -48,17 +48,18 @@ class ACNetworkContinuous():
 
             # Only the worker network need ops for loss functions and gradient updating.
             if scope != 'global':
-                self.actions = tf.placeholder(shape=[None], dtype=tf.float32)
+                self.actions = tf.placeholder(shape=[None, a_size], dtype=tf.float32)
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
                 print(self.actions)
-                self.responsible_outputs = tf.reduce_sum(self.actions, [1]) #think more
+                self.actions_reshaped = tf.reshape(self.actions, shape=[-1,3])
+                self.actions_diff = tf.reduce_sum(self.actions - self.policy, [1]) #think more
 
 
                 # Loss functions
                 self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))
-                self.policy_loss = -tf.reduce_sum(tf.log(self.responsible_outputs) * self.advantages)
+                self.policy_loss = -tf.reduce_sum(tf.log(self.actions_diff)) #* self.advantages)
                 self.loss = 0.5 * self.value_loss + self.policy_loss - self.entropy * 0.01
 
                 # Get gradients from local network using local losses

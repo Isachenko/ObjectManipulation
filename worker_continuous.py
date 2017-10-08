@@ -29,11 +29,18 @@ class WorkerContinuous():
 
     def train(self, rollout, sess, gamma, bootstrap_value):
         rollout = np.array(rollout)
+        #print("rollout:", rollout)
         observations = rollout[:, 0]
-        actions = rollout[:, 1]
+        actions = np.vstack(np.array(rollout[:, 1]))
         rewards = rollout[:, 2]
         next_observations = rollout[:, 3]
         values = rollout[:, 5]
+
+        #print("observations:", observations)
+        #print("observations:", np.vstack(observations))
+        #print("actions:", actions)
+        #print("rewards:", rewards)
+        #print("values:", values)
 
         # Here we take the rewards and values from the rollout, and use them to
         # generate the advantage and discounted returns.
@@ -63,6 +70,7 @@ class WorkerContinuous():
         return v_l / len(rollout), p_l / len(rollout), e_l / len(rollout), g_n, v_n
 
     def work(self, max_episode_length, gamma, sess, coord, saver):
+        print("worker go go go")
         episode_count = sess.run(self.global_episodes)
         total_steps = 0
         print("Starting worker " + str(self.number))
@@ -90,12 +98,13 @@ class WorkerContinuous():
                         feed_dict={self.local_AC.inputs: [s],
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
-
+                    a = a[0]
                     #Random sometimes and add noise
                     #if random.uniform(0, 1) < 0.01:
-                    #    explore = np.random.normal(0.1, 0.05, 3)
-                    #    a = a + explore
-
+                    explore = np.random.normal(0.0, 0.05, 3)
+                    a = a + explore
+                    #print("act: ",a)
+                    #print("val: ", v)
                     self.env.make_action_continuous(a)
                     r = self.env.get_reward()
                     d = self.env.is_episode_finished()
@@ -108,6 +117,7 @@ class WorkerContinuous():
                     else:
                         s1 = s
 
+                    #print("s", s)
                     episode_buffer.append([s, a, r, s1, d, v[0, 0]])
                     episode_values.append(v[0, 0])
 
