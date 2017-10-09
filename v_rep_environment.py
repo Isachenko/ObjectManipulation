@@ -91,10 +91,10 @@ class VRepEnvironment():
 
         err, self.uarm_camera_handle = vrep.simxGetObjectHandle(self.connection_id, 'Vision_sensor',
                                                                 vrep.simx_opmode_blocking)
-        print(self.uarm_camera_handle)
+        #print(self.uarm_camera_handle)
 
         err, self.target_object_handle = vrep.simxGetObjectHandle(self.connection_id, 'Cuboid0', vrep.simx_opmode_blocking)
-        print(self.target_object_handle)
+        #print(self.target_object_handle)
         print("Got handles")
 
     def reset(self):
