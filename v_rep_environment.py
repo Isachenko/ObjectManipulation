@@ -164,9 +164,15 @@ class VRepEnvironment():
         #print(reward)
         return reward
 
+    def get_reward_1(self):
+        err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
+        reward = round(np.linalg.norm(np.array(linear_v)), 2) - 0.00005
+        #print(reward)
+        return reward
+
     def make_action_continuous(self,value):
         if self.current_step < self.episode_length:
-            value = value - 0.5
+            value = (value - 0.5)*0.2
             actions = [self.rotate_clockwise_continuous, self.rotate_front_continuous, self.rotate_up_continuous]
             for i, action in enumerate(actions):
                 action(value[i])

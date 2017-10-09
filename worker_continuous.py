@@ -106,7 +106,7 @@ class WorkerContinuous():
                     #print("act: ",a)
                     #print("val: ", v)
                     self.env.make_action_continuous(a)
-                    r = self.env.get_reward()
+                    r = self.env.get_reward_1()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
