@@ -22,6 +22,10 @@ def process_frame(frame):
     #print(s.shape,s)
     return s
 
+def process_gif(s,side_s):
+    black_line = np.ones((84, 10))
+    return np.flipud(np.concatenate((np.reshape(side_s, (84, 84)), black_line, np.reshape(s, (84, 84))), axis=1))
+
 # Discounting function used to calculate discounted returns.
 def discount(x, gamma):
     return scipy.signal.lfilter([1], [1, -gamma], x[::-1], axis=0)[::-1]

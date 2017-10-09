@@ -91,6 +91,8 @@ class VRepEnvironment():
 
         err, self.uarm_camera_handle = vrep.simxGetObjectHandle(self.connection_id, 'Vision_sensor',
                                                                 vrep.simx_opmode_blocking)
+        err, self.uarm_side_camera_handle = vrep.simxGetObjectHandle(self.connection_id, 'side_camera',
+                                                                vrep.simx_opmode_blocking)
         #print(self.uarm_camera_handle)
 
         err, self.target_object_handle = vrep.simxGetObjectHandle(self.connection_id, 'Cuboid0', vrep.simx_opmode_blocking)
@@ -117,6 +119,7 @@ class VRepEnvironment():
         vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle1, vrep.simx_opmode_streaming)
         vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_streaming)
         vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_streaming)
+        vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_side_camera_handle, 1, vrep.simx_opmode_streaming)
         vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_streaming)
 
         #print("Env has been started")
@@ -139,12 +142,18 @@ class VRepEnvironment():
             vrep.simxGetJointPosition(self.connection_id, self.uarm_gripper_motor_handle2, vrep.simx_opmode_buffer))
 
         err, res, image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_buffer)
+        err, res, side_image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_side_camera_handle, 1, vrep.simx_opmode_buffer)
         #print("just get image")
         #print(res, len(image), image)
         if image == []:
             image = np.zeros([84*84], dtype=np.uint8)
         else:
             image = np.array(image, dtype=np.uint8)
+
+        if side_image == []:
+            side_image = np.zeros([84*84], dtype=np.uint8)
+        else:
+            side_image = np.array(side_image, dtype=np.uint8)
 
         #print("image: ")
         #print(image)
@@ -153,6 +162,7 @@ class VRepEnvironment():
         state = VrepState()
         state.joints = joints_positions
         state.image = image
+        state.side_image = side_image
 
         #print("image after: ", image)
 

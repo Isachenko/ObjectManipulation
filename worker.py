@@ -98,10 +98,11 @@ class Worker():
                 d = False
 
                 self.env.new_episode()
+
                 s = self.env.get_state().image
-                image_to_show = np.reshape(s, (84,84))
-                episode_frames.append(image_to_show)
                 s = process_frame(s)
+
+
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
                 while self.env.is_episode_finished() == False:
@@ -118,10 +119,16 @@ class Worker():
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
-                        image_to_show = np.reshape(s1, (84,84))
-                        episode_frames.append(image_to_show)
+                        side_s = self.env.get_state().side_image
+                        frame = process_gif(s1, side_s)
+                        episode_frames.append(frame)
 
                         s1 = process_frame(s1)
+
+
+
+
+
                     else:
                         s1 = s
 
@@ -164,6 +171,7 @@ class Worker():
                         images = np.array(episode_frames)
                         make_gif(images, frames_path + '/image' + str(episode_count) + '.gif',
                                  duration=len(images) * time_per_step, true_image=True, salience=False)
+
                         #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
                         #scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
 

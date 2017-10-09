@@ -86,8 +86,6 @@ class WorkerContinuous():
 
                 self.env.new_episode()
                 s = self.env.get_state().image
-                image_to_show = np.reshape(s, (84,84))
-                episode_frames.append(image_to_show)
                 s = process_frame(s)
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
@@ -110,8 +108,9 @@ class WorkerContinuous():
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
-                        image_to_show = np.reshape(s1, (84,84))
-                        episode_frames.append(image_to_show)
+                        side_s = self.env.get_state().side_image
+                        frame = process_gif(s1, side_s)
+                        episode_frames.append(frame)
 
                         s1 = process_frame(s1)
                     else:
