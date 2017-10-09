@@ -59,7 +59,7 @@ class ACNetworkContinuous():
                 # Loss functions
                 self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))
-                self.policy_loss = 0.5 * tf.reduce_sum(self.actions_diff) #* self.advantages)
+                self.policy_loss = 0.5 * tf.reduce_sum(self.actions_diff * self.advantages)
                 self.loss = 0.5 * self.value_loss + self.policy_loss - self.entropy * 0.01
 
                 # Get gradients from local network using local losses

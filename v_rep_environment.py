@@ -33,13 +33,13 @@ class VRepEnvironment():
             headless = " -h"
         xvbf = ""
         if PEREGRINE:
-            xvbf = 'xvfb-run -d --server-num=1 '
+            xvbf = 'xvfb-run -d --server-num=1 -s "-screen 0 640x480x24" '
         bash_command = xvbf + VREP_EXE_PATH + headless + ' -gREMOTEAPISERVERSERVICE_' + str(port) + '_FALSE_TRUE ' + VREP_SCENE_PATH
         args = shlex.split(bash_command)
         print(bash_command)
         self.vrep_process = subprocess.Popen(args)
         print("sleep")
-        time.sleep(3)
+        time.sleep(8)
         print("woke up")
 
         self.connect_to_vrep()

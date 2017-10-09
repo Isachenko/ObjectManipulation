@@ -101,7 +101,7 @@ class WorkerContinuous():
                     a = a[0]
                     #Random sometimes and add noise
                     #if random.uniform(0, 1) < 0.01:
-                    explore = np.random.normal(0.0, 0.05, 3)
+                    explore = np.random.normal(0.0, 0.5, 3)
                     a = a + explore
                     #print("act: ",a)
                     #print("val: ", v)
