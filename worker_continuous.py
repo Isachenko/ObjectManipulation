@@ -108,9 +108,11 @@ class WorkerContinuous():
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
-                        side_s = self.env.get_state().side_image
-                        frame = process_gif(s1, side_s)
-                        episode_frames.append(frame)
+                        if self.number == 0:
+                            side_s = self.env.get_state().side_image
+                            frame = process_gif(s1, side_s)
+                            episode_frames.append(frame)
+
 
                         s1 = process_frame(s1)
                     else:
