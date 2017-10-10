@@ -210,7 +210,8 @@ class VRepEnvironment():
                                                              vrep.simx_opmode_buffer)
         # print(current_pos)
         new_pos = current_pos + value
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos,
+        #print("RCW_C", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos,
                                                       vrep.simx_opmode_oneshot)
 
     def rotate_clockwise(self):
@@ -218,7 +219,8 @@ class VRepEnvironment():
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)
         # print(current_pos)
         new_pos = current_pos - self.eps
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RW", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
 
 
     def rotate_counter_clockwise(self):
@@ -226,7 +228,8 @@ class VRepEnvironment():
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)
         # print(current_pos)
         new_pos = current_pos + self.eps
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RCW", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor1_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_front_continuous(self,value):
         # print("front")
@@ -235,6 +238,15 @@ class VRepEnvironment():
         new_pos = current_pos + value
         if (new_pos < 0.2):
             new_pos = 0.2
+
+        return_code, down_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle,
+                                                          vrep.simx_opmode_buffer)
+
+        if (current_pos < 0.9) and (down_pos > 2.4):
+            new_pos = 0.9
+        #print("RF_C", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos,
+                                                      vrep.simx_opmode_oneshot)
 
     def rotate_front(self):
         # print("front")
@@ -248,7 +260,8 @@ class VRepEnvironment():
 
         if (current_pos < 0.9) and (down_pos > 2.4):
             new_pos = 0.9
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RF", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_back(self):
         # print("back")
@@ -257,7 +270,8 @@ class VRepEnvironment():
         new_pos = current_pos + self.eps
         if (new_pos > 1.9):
             new_pos = 1.9
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RB", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_up_continuous(self, value):
         # print("up")
@@ -266,7 +280,8 @@ class VRepEnvironment():
         new_pos = current_pos + value
         if (new_pos < 0.13):
             new_pos = 0.13
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RU_C", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_up(self):
         # print("up")
@@ -275,7 +290,8 @@ class VRepEnvironment():
         new_pos = current_pos - self.eps
         if (new_pos < 0.13):
             new_pos = 0.13
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RU", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_down(self):
         # print("down")
@@ -285,7 +301,8 @@ class VRepEnvironment():
         new_pos = current_pos + self.eps
         if (front_pos < 0.9) and (current_pos > 2.4):
             new_pos = 2.4
-        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+        #print("RD", new_pos)
+        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def __del__(self):
         self.disconnect_from_vrep()

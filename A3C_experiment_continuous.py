@@ -65,9 +65,9 @@ with tf.Session() as sess:
     coord.join(worker_threads)
 
 #After every thread stops
-now = datetime.datetime.now()
-new_name = results_path + now.strftime("_%d-%m-%Y_%H-%M")
-shutil.move(results_path, new_name)
+#now = datetime.datetime.now()
+#new_name = results_path + now.strftime("_%d-%m-%Y_%H-%M-%S")
+#shutil.move(results_path, new_name)
 
 if not os.path.exists(archive_path):
     os.makedirs(archive_path)
