@@ -95,7 +95,9 @@ class VRepEnvironment():
                                                                 vrep.simx_opmode_blocking)
         #print(self.uarm_camera_handle)
 
-        err, self.target_object_handle = vrep.simxGetObjectHandle(self.connection_id, 'Cuboid0', vrep.simx_opmode_blocking)
+        err, self.target_object_handle = vrep.simxGetObjectHandle(self.connection_id, 'Target', vrep.simx_opmode_blocking)
+        err, self.position_object_handle = vrep.simxGetObjectHandle(self.connection_id, 'Position',
+                                                                  vrep.simx_opmode_blocking)
         #print(self.target_object_handle)
         print("Got handles")
 
@@ -121,6 +123,8 @@ class VRepEnvironment():
         vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_streaming)
         vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_side_camera_handle, 1, vrep.simx_opmode_streaming)
         vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_streaming)
+        vrep.simxGetObjectPosition(self.connection_id, self.target_object_handle, self.position_object_handle, vrep.simx_opmode_streaming)
+
 
         #print("Env has been started")
         # returnCode, position = vrep.simxGetObjectPosition(self.connection_id, sphere_handle, -1, vrep.simx_opmode_streaming)
@@ -143,6 +147,7 @@ class VRepEnvironment():
 
         err, res, image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_camera_handle, 1, vrep.simx_opmode_buffer)
         err, res, side_image = vrep.simxGetVisionSensorImage(self.connection_id, self.uarm_side_camera_handle, 1, vrep.simx_opmode_buffer)
+
         #print("just get image")
         #print(res, len(image), image)
         if image == []:
@@ -172,6 +177,16 @@ class VRepEnvironment():
         err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
         reward = round(np.linalg.norm(np.array(linear_v)), 2)
         #print(reward)
+        return reward
+
+    def get_reward_distance(self):
+        return_code, position = vrep.simxGetObjectPosition(self.connection_id, self.target_object_handle, self.position_object_handle,
+                                                           vrep.simx_opmode_buffer)
+        reward = 0
+        for i in position:
+            reward += i * i
+        reward = 1/reward
+
         return reward
 
     def get_reward_1(self):

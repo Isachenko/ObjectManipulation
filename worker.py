@@ -125,10 +125,6 @@ class Worker():
 
                         s1 = process_frame(s1)
 
-
-
-
-
                     else:
                         s1 = s
 
