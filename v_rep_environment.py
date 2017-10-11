@@ -185,7 +185,7 @@ class VRepEnvironment():
         reward = 0
         for i in position:
             reward += i * i
-        #reward = 1/(reward*1000) 
+        #reward = 1/(reward*1000)
 
         #print(reward)
 

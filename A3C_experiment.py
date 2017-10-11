@@ -72,4 +72,4 @@ with tf.Session() as sess:
 if not os.path.exists(archive_path):
     os.makedirs(archive_path)
 
-shutil.move(new_name, archive_path)
+#shutil.move(new_name, archive_path)
