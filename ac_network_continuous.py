@@ -39,7 +39,7 @@ class ACNetworkContinuous():
             # Output layers for policy and value estimations
             self.policy = slim.fully_connected(rnn_out, a_size,
                                                activation_fn=tf.nn.sigmoid,
-                                               weights_initializer=utils.normalized_columns_initializer(0.01),
+                                               weights_initializer=utils.normalized_columns_initializer(0.000),
                                                biases_initializer=None)
             self.value = slim.fully_connected(rnn_out, 1,
                                               activation_fn=None,
@@ -51,9 +51,9 @@ class ACNetworkContinuous():
                 self.actions = tf.placeholder(shape=[None, a_size], dtype=tf.float32)
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
-                print(self.actions)
+                self.print_adv = tf.Print(self.advantages, [self.advantages])
                 self.actions_reshaped = tf.reshape(self.actions, shape=[-1,3])
-                self.actions_diff = tf.reduce_sum(tf.square(self.actions - self.policy), [1]) #think more
+                self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
 
 
                 # Loss functions
@@ -62,7 +62,7 @@ class ACNetworkContinuous():
 
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))
                 self.policy_loss = 0.5 * tf.reduce_sum(self.actions_diff * self.advantages)
-                self.loss = 0.2 * self.value_loss + self.policy_loss - self.entropy * 0.01
+                self.loss = 0.6 * self.value_loss + self.policy_loss - self.entropy * 0.01# + self.print_adv
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)

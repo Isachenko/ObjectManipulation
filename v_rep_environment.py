@@ -197,6 +197,12 @@ class VRepEnvironment():
         #print(reward)
         return reward
 
+    def get_reward_for_left(self):
+        return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor1_handle, vrep.simx_opmode_buffer)
+        reward = current_pos
+        #print(reward)
+        return reward
+
     def make_action_continuous(self,value):
         if self.current_step < self.episode_length:
             value = (value - 0.5)*0.2
@@ -254,17 +260,14 @@ class VRepEnvironment():
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor2_handle, vrep.simx_opmode_buffer)
         # print(current_pos)
         new_pos = current_pos + value
-        if (new_pos < 0.2):
-            new_pos = 0.2
+        #if (new_pos < 0.2):
+        #    new_pos = 0.2
 
-        return_code, down_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle,
-                                                          vrep.simx_opmode_buffer)
+        #return_code, down_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer)
 
-        if (current_pos < 0.9) and (down_pos > 2.4):
-            new_pos = 0.9
-        #print("RF_C", new_pos)
-        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos,
-                                                      vrep.simx_opmode_oneshot)
+        #if (current_pos < 0.9) and (down_pos > 2.4):
+        #    new_pos = 0.9
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor2_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_front(self):
         # print("front")
@@ -296,10 +299,9 @@ class VRepEnvironment():
         return_code, current_pos = vrep.simxGetJointPosition(self.connection_id, self.uarm_motor3_handle, vrep.simx_opmode_buffer)
         # print(current_pos)
         new_pos = current_pos + value
-        if (new_pos < 0.13):
-            new_pos = 0.13
-        #print("RU_C", new_pos)
-        return_code = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
+        #if (new_pos < 0.13):
+        #    new_pos = 0.13
+        retur_ncode = vrep.simxSetJointTargetPosition(self.connection_id, self.uarm_motor3_handle, new_pos, vrep.simx_opmode_oneshot)
 
     def rotate_up(self):
         # print("up")

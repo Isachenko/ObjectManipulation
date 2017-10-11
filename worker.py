@@ -115,7 +115,7 @@ class Worker():
                     a = np.random.choice(a_dist[0], p=a_dist[0])
                     a = np.argmax(a_dist == a)
                     self.env.make_action(self.actions[a])
-                    r = self.env.get_reward()
+                    r = self.env.get_reward_for_left()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image

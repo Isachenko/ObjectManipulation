@@ -54,7 +54,7 @@ class WorkerContinuous():
 
         # Update the global network using gradients from loss
         # Generate network statistics to periodically save
-        feed_dict = {self.local_AC.target_v: targ_value,
+        feed_dict = {self.local_AC.target_v: discounted_rewards,
                      self.local_AC.inputs: np.vstack(observations),
                      self.local_AC.actions: actions,
                      self.local_AC.advantages: advantages,
@@ -100,13 +100,14 @@ class WorkerContinuous():
                     a = a[0]
                     #Random sometimes and add noise
                     #if random.uniform(0, 1) < 0.01:
-                    explore = np.random.normal(0.0, 0.3, 3)
+                    explore = np.random.normal(0.0, 0.1, 3)
+                    #print("exp:", explore)
                     a = a + explore
                     #print("act: ", a)
                     np.clip(a, 0.1, 0.9, out=a)
                     #print("act_1: ", a)
                     self.env.make_action_continuous(a)
-                    r = self.env.get_reward_1()
+                    r = self.env.get_reward()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
