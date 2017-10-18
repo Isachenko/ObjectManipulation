@@ -205,11 +205,9 @@ class VRepEnvironment():
 
     def make_action_continuous(self,value):
         if self.current_step < self.episode_length:
-            value = (value - 0.5)*0.2
-            #print("a:", value)
             actions = [self.rotate_clockwise_continuous, self.rotate_front_continuous, self.rotate_up_continuous]
             for i, action in enumerate(actions):
-                action(value[i])
+                action(value[i*2] - value[(i*2)+1])
 
             vrep.simxSynchronousTrigger(self.connection_id)
             self.current_step += 1

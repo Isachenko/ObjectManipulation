@@ -13,7 +13,7 @@ from worker_continuous import WorkerContinuous
 import shutil
 
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
-a_size = 3  # clockwise/counterclockwise, up/down, back/forth
+a_size = 6  # clockwise/counterclockwise, up/down, back/forth
 
 
 tf.reset_default_graph()

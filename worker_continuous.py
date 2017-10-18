@@ -9,6 +9,7 @@ import scipy.misc
 
 class WorkerContinuous():
     def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):
+        self.a_size = a_size
         self.name = "c_worker_" + str(name)
         self.number = name
         self.model_path = model_path
@@ -26,6 +27,8 @@ class WorkerContinuous():
 
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
         self.env = game
+
+
 
     def train(self, rollout, sess, gamma, bootstrap_value):
         rollout = np.array(rollout)
@@ -71,7 +74,6 @@ class WorkerContinuous():
         return v_l / len(rollout), p_l / len(rollout), e_l / len(rollout), g_n, v_n
 
     def work(self, max_episode_length, gamma, sess, coord, saver):
-        print("worker go go go")
         episode_count = sess.run(self.global_episodes)
         total_steps = 0
         print("Starting worker " + str(self.number))
@@ -100,14 +102,14 @@ class WorkerContinuous():
                     a = a[0]
                     #Random sometimes and add noise
                     #if random.uniform(0, 1) < 0.01:
-                    explore = np.random.normal(0.0, 0.1, 3)
+                    explore = np.random.normal(0.0, 0.1, self.a_size)
                     #print("exp:", explore)
                     a = a + explore
                     #print("act: ", a)
                     np.clip(a, 0.1, 0.9, out=a)
                     #print("act_1: ", a)
                     self.env.make_action_continuous(a)
-                    r = self.env.get_reward()
+                    r = self.env.get_reward_for_left()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image

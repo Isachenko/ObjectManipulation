@@ -39,7 +39,7 @@ class ACNetworkContinuous():
             # Output layers for policy and value estimations
             self.policy = slim.fully_connected(rnn_out, a_size,
                                                activation_fn=tf.nn.sigmoid,
-                                               weights_initializer=utils.normalized_columns_initializer(0.000),
+                                               weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             self.value = slim.fully_connected(rnn_out, 1,
                                               activation_fn=None,
@@ -52,7 +52,7 @@ class ACNetworkContinuous():
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.print_adv = tf.Print(self.advantages, [self.advantages])
-                self.actions_reshaped = tf.reshape(self.actions, shape=[-1,3])
+                self.actions_reshaped = tf.reshape(self.actions, shape=[-1, a_size])
                 self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
 
 
