@@ -60,9 +60,9 @@ class VRepEnvironment():
         vrep.simxSynchronous(self.connection_id, True)
         self.get_handles()
 
-    def load_scene(self):
-        vrep.simxLoadScene(self.connection_id, 'uarmGripper.ttt', 1, vrep.simx_opmode_blocking)
-        print("Scene loaded")
+    #def load_scene(self):
+        #vrep.simxLoadScene(self.connection_id, 'uarmGripper.ttt', 1, vrep.simx_opmode_blocking)
+        #print("Scene loaded")
 
 
     def disconnect_from_vrep(self):

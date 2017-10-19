@@ -109,7 +109,7 @@ class WorkerContinuous():
                     np.clip(a, 0.1, 0.9, out=a)
                     #print("act_1: ", a)
                     self.env.make_action_continuous(a)
-                    r = self.env.get_reward_for_left()
+                    r = self.env.get_reward()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
