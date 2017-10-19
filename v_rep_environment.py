@@ -173,11 +173,21 @@ class VRepEnvironment():
 
         return state
 
+    def get_reward_command_line(self):
+        s = int(sys.argv[2])
+        #               Speed small cube,   distance                    , go to the left            , big cube
+        rewards = [self.get_reward_speed(),self.get_reward_distance(),self.get_reward_for_left(),self.get_reward_speed()]
+        reward = rewards[s]
+        return reward
+
+
     def get_reward(self):
         err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
         reward = round(np.linalg.norm(np.array(linear_v)), 2)
-        #print(reward)
         return reward
+
+    def get_reward_speed(self):
+        return self.get_reward()
 
     def get_reward_distance(self):
         return_code, position = vrep.simxGetObjectPosition(self.connection_id, self.target_object_handle, self.position_object_handle,

@@ -6,6 +6,7 @@ from utils import utils
 
 class ACNetworkContinuous():
     def __init__(self, s_size, a_size, scope, trainer):
+
         with tf.variable_scope(scope):
             # Input and visual encoding layers
             self.inputs = tf.placeholder(shape=[None, s_size], dtype=tf.float32)

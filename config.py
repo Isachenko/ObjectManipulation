@@ -2,11 +2,25 @@
 
 import os
 import datetime
+import main
+import sys
 MAIN_SCRIPT_PATH = os.path.abspath(".")
 
+scenes = {  0 : "/scenes/uarm_gripper.ttt",
+            1 : "/scenes/uarm_gripper_distance.ttt",
+            2 : "/scenes/uarm_gripper.ttt",
+            3 : "/scenes/uarm_gripper_big.ttt"
+    }
 #vrep related params
 VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/wrong'
-VREP_SCENE_PATH = MAIN_SCRIPT_PATH + '/scenes/uarm_gripper_big.ttt'
+if len(sys.argv) > 1:
+    s = int(sys.argv[2])
+    SCENE_PATH = scenes[s]
+
+else:
+    SCENE_PATH = '/scenes/uarm_gripper.ttt'
+VREP_SCENE_PATH = MAIN_SCRIPT_PATH + SCENE_PATH
+REWARD_FUNCTION = ""
 VREP_API_PATH = MAIN_SCRIPT_PATH + '/vrep_api'
 VREP_HEADLESS = True
 
