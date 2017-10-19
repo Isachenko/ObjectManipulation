@@ -39,7 +39,7 @@ class VRepEnvironment():
         print(bash_command)
         self.vrep_process = subprocess.Popen(args)
         print("sleep")
-        time.sleep(8)
+        time.sleep(2)
         print("woke up")
 
         self.connect_to_vrep()

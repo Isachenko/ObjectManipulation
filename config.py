@@ -6,7 +6,7 @@ MAIN_SCRIPT_PATH = os.path.abspath(".")
 
 #vrep related params
 VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/wrong'
-VREP_SCENE_PATH = MAIN_SCRIPT_PATH + '/scenes/uarmGripper.ttt'
+VREP_SCENE_PATH = MAIN_SCRIPT_PATH + '/scenes/uarm_gripper_big.ttt'
 VREP_API_PATH = MAIN_SCRIPT_PATH + '/vrep_api'
 VREP_HEADLESS = True
 
