@@ -11,6 +11,15 @@ scenes = {  0 : "/scenes/uarm_gripper.ttt",
             2 : "/scenes/uarm_gripper.ttt",
             3 : "/scenes/uarm_gripper_big.ttt"
     }
+
+discrete_or_continuous = {  0 : "discrete",
+            1 : "continuous",
+    }
+experiment = {  0 : "speed",
+            1 : "distance",
+            2 : "left",
+            3 : "big"
+    }
 #vrep related params
 VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/wrong'
 if len(sys.argv) > 1:
@@ -19,6 +28,7 @@ if len(sys.argv) > 1:
 
 else:
     SCENE_PATH = '/scenes/uarm_gripper.ttt'
+
 VREP_SCENE_PATH = MAIN_SCRIPT_PATH + SCENE_PATH
 REWARD_FUNCTION = ""
 VREP_API_PATH = MAIN_SCRIPT_PATH + '/vrep_api'
@@ -35,6 +45,11 @@ num_workers = 1
 #statistics save params
 now = datetime.datetime.now()
 results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S")
+if len(sys.argv) > 1:
+    var1 = int(sys.argv[1])
+    var2 = int(sys.argv[2])
+    results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S_") + discrete_or_continuous[var1] + "_" + experiment[var2]
+
 model_path = results_path + '/model'
 frames_path = results_path + '/frames'
 statistics_path = results_path + '/train_'
