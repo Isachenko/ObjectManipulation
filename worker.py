@@ -118,7 +118,7 @@ class Worker():
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
                     else:
-                        r = self.env.get_reward()
+                        r = self.env.get_reward_distance()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image

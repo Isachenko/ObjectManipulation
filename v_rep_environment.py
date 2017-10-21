@@ -195,10 +195,11 @@ class VRepEnvironment():
         reward = 0
         for i in position:
             reward += i * i
+
+        initial_distance = 0.0856
+        reward = round(reward, 4) - initial_distance
         #reward = 1/(reward*1000)
-
         #print(reward)
-
         return reward
 
     def get_reward_1(self):
