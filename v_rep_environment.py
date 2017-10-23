@@ -4,6 +4,7 @@ import shlex
 import subprocess
 
 import numpy as np
+import random
 
 from config import *
 
@@ -176,7 +177,7 @@ class VRepEnvironment():
     def get_reward_command_line(self):
         s = int(sys.argv[2])
         #               Speed small cube,   distance                    , go to the left            , big cube
-        rewards = [self.get_reward_speed(),self.get_reward_distance(),self.get_reward_for_left(),self.get_reward_speed()]
+        rewards = [self.get_reward_speed(),self.get_reward_distance(),self.get_reward_for_left(),self.get_reward_speed(),self.get_reward_speed()]
         reward = rewards[s]
         return reward
 
@@ -336,6 +337,13 @@ class VRepEnvironment():
     def __del__(self):
         self.disconnect_from_vrep()
         self.vrep_process.terminate()
+
+    def set_target_position_random_X(self):
+        position = []
+        position.append(random.random()*-0.25)
+        position.append(-0.35)
+        position.append(0.05)
+        returnCode = vrep.simxSetObjectPosition(self.connection_id,  self.target_object_handle, -1, position, vrep.simx_opmode_oneshot)
 
 
 class VrepState():

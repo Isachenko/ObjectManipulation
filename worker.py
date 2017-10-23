@@ -98,6 +98,8 @@ class Worker():
                 d = False
 
                 self.env.new_episode()
+                if RANDOM == True:
+                    self.env.set_target_position_random_X()
 
                 s = self.env.get_state().image
                 s = process_frame(s)
@@ -118,7 +120,7 @@ class Worker():
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
                     else:
-                        r = self.env.get_reward_distance()
+                        r = self.env.get_reward()
                     d = self.env.is_episode_finished()
                     if d == False:
                         s1 = self.env.get_state().image
@@ -200,6 +202,7 @@ class Worker():
                 if self.number == 0:
                     sess.run(self.increment)
                 episode_count += 1
+
 
                 if episode_count == MAX_NUMBER_OF_EPISODES:
                     self.env.__del__()
