@@ -38,7 +38,7 @@ class ACNetworkContinuous():
             rnn_out = tf.reshape(lstm_outputs, [-1, 256])
 
             # Output layers for policy and value estimations
-            self.policy = slim.fully_connected(rnn_out, a_size,
+            self.policy = slim.fully_connected(rnn_out, 2*a_size,
                                                activation_fn=tf.nn.sigmoid,
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
@@ -49,11 +49,11 @@ class ACNetworkContinuous():
 
             # Only the worker network need ops for loss functions and gradient updating.
             if scope != 'global':
-                self.actions = tf.placeholder(shape=[None, a_size], dtype=tf.float32)
+                self.actions = tf.placeholder(shape=[None, 2*a_size], dtype=tf.float32)
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.print_adv = tf.Print(self.advantages, [self.advantages])
-                self.actions_reshaped = tf.reshape(self.actions, shape=[-1, a_size])
+                self.actions_reshaped = tf.reshape(self.actions, shape=[-1, 2*a_size])
                 self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
 
 
@@ -63,7 +63,7 @@ class ACNetworkContinuous():
 
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))
                 self.policy_loss = 0.5 * tf.reduce_sum(self.actions_diff * self.advantages)
-                self.loss = 0.6 * self.value_loss + self.policy_loss - self.entropy * 0.01# + self.print_adv
+                self.loss = 0.5 * self.value_loss + self.policy_loss - self.entropy * 0.01# + self.print_adv
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)

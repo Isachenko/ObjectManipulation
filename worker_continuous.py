@@ -100,15 +100,19 @@ class WorkerContinuous():
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
                     a = a[0]
+                    # a = m_3, var_r
                     #Random sometimes and add noise
                     #if random.uniform(0, 1) < 0.01:
-                    explore = np.random.normal(0.0, 0.1, self.a_size)
+                    #explore = np.random.normal(0.0, 0.1, self.a_size)
+                    a_sim = np.random.normal(a[0:self.a_size], a[self.a_size:], self.a_size)
+
                     #print("exp:", explore)
-                    a = a + explore
+                    #a = a + explore
+
                     #print("act: ", a)
-                    np.clip(a, 0.1, 0.9, out=a)
+                    np.clip(a_sim, 0.0, 1, out=a_sim)
                     #print("act_1: ", a)
-                    self.env.make_action_continuous(a)
+                    self.env.make_action_continuous(a_sim)
 
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
