@@ -40,11 +40,11 @@ class WorkerContinuous():
         next_observations = rollout[:, 3]
         values = rollout[:, 5]
 
-        print("observations:", observations)
-        print("observations:", np.vstack(observations))
-        print("actions:", actions)
-        print("rewards:", rewards)
-        print("values:", values)
+        # print("observations:", observations)
+        # print("observations:", np.vstack(observations))
+        # print("actions:", actions)
+        # print("rewards:", rewards)
+        # print("values:", values)
 
         # Here we take the rewards and values from the rollout, and use them to
         # generate the advantage and discounted returns.
@@ -55,7 +55,7 @@ class WorkerContinuous():
         advantages = rewards + gamma * self.value_plus[1:] - self.value_plus[:-1]
         advantages = discount(advantages, gamma)
 
-        print("discounted_rewards: ", discounted_rewards)
+        #print("discounted_rewards: ", discounted_rewards)
         # Update the global network using gradients from loss
         # Generate network statistics to periodically save
         feed_dict = {self.local_AC.target_v: discounted_rewards,
@@ -66,12 +66,14 @@ class WorkerContinuous():
                      self.local_AC.state_in[1]: self.batch_rnn_state[1]}
         v_l, p_l, e_l, g_n, v_n, self.batch_rnn_state, _ = sess.run([self.local_AC.value_loss,
                                                                      self.local_AC.policy_loss,
-                                                                     self.local_AC.entropy,
+                                                                     self.local_AC.mean_entropy,
                                                                      self.local_AC.grad_norms,
                                                                      self.local_AC.var_norms,
                                                                      self.local_AC.state_out,
                                                                      self.local_AC.apply_grads],
                                                                     feed_dict=feed_dict)
+        #print("VL_0: ", v_l)
+        #print("PL_0: ", p_l)
         return v_l / len(rollout), p_l / len(rollout), e_l / len(rollout), g_n, v_n
 
     def work(self, max_episode_length, gamma, sess, coord, saver):
@@ -137,14 +139,14 @@ class WorkerContinuous():
                     if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
                         # Since we don't know what the true final return is, we "bootstrap" from our current
                         # value estimation.
-                        print("time to train")
+                        #print("time to train")
                         #print(episode_buffer.shape)
-                        print(episode_buffer[0])
+                        #print(episode_buffer[0])
                         v1 = sess.run(self.local_AC.value,
                                       feed_dict={self.local_AC.inputs: [s],
                                                  self.local_AC.state_in[0]: rnn_state[0],
                                                  self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
-                        print("before train")
+                        #print("before train")
                         v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1)
                         episode_buffer = []
                         sess.run(self.update_local_ops)

@@ -70,7 +70,7 @@ class ACNetworkContinuousGaussian():
                 mu = self.policy_mean * A_BOUND_HIGH
                 sigma = self.policy_sigma + 1e-4
 
-                normal_dist = tf.contrib.distributions.Normal(mu, sigma)
+                normal_dist = tf.contrib.distributions.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
                 self.A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW, A_BOUND_HIGH)
 
                 td = tf.subtract(self.target_v, tf.reshape(self.value, [-1]), name='TD_error')
@@ -81,14 +81,17 @@ class ACNetworkContinuousGaussian():
 
                 #action loss
                 log_prob = normal_dist.log_prob(self.actions, name='log_prob')
-                #self.print_log_prob = tf.Print(log_prob, [log_prob])
                 #reduced_log_prob = tf.reduce_sum(log_prob, 1)
                 self.exp_v = tf.multiply(log_prob, td, name="mult_log_td")
                 self.entropy = normal_dist.entropy()  # encourage exploration
+                #self.print_entropy = tf.Print(self.entropy, [self.entropy])
                 self.exp_v = ENTROPY_BETA * self.entropy + self.exp_v
-                self.policy_loss = tf.reduce_mean(-self.exp_v)
+                #self.print_exp_v = tf.Print(self.exp_v, [self.exp_v])
+                self.policy_loss = tf.reduce_mean(-self.exp_v) #+ self.print_exp_v + self.print_entropy
+                #self.print_policy_loss = tf.Print(self.policy_loss, [self.policy_loss])
+                self.mean_entropy = tf.reduce_mean(self.entropy)
 
-                self.loss = 0.5 * self.value_loss + self.policy_loss
+                self.loss = 0.5 * self.value_loss + self.policy_loss #+ self.print_policy_loss
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
