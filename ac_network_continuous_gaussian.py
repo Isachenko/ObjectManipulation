@@ -1,13 +1,16 @@
-ximport numpy as np
+import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from utils import utils
 
 
-class ACNetworkContinuous():
+ENTROPY_BETA = 0.01
+A_BOUND_LOW = -1
+A_BOUND_HIGH = 1
+
+class ACNetworkContinuousGaussian():
     def __init__(self, s_size, a_size, scope, trainer):
-        A_BOUND_LOW = -1
-        A_BOUND_HIGH = 1
+
 
         with tf.variable_scope(scope):
             # Input and visual encoding layers
@@ -45,7 +48,7 @@ class ACNetworkContinuous():
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             self.policy_sigma = slim.fully_connected(rnn_out, a_size,
-                                               activation_fn=tf.nn.tanh,
+                                               activation_fn=tf.nn.softplus,
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             self.value = slim.fully_connected(rnn_out, 1,
@@ -53,38 +56,39 @@ class ACNetworkContinuous():
                                               weights_initializer=utils.normalized_columns_initializer(1.0),
                                               biases_initializer=None)
 
-            self.A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW , A_BOUND_HIGH)
 
             # Only the worker network need ops for loss functions and gradient updating.
             if scope != 'global':
-                self.actions = tf.placeholder(shape=[None, 2*a_size], dtype=tf.float32)
+                self.actions = tf.placeholder(shape=[None, a_size], dtype=tf.float32)
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.print_adv = tf.Print(self.advantages, [self.advantages])
-                self.actions_reshaped = tf.reshape(self.actions, shape=[-1, 2*a_size])
-                self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
+                self.actions_reshaped = tf.reshape(self.actions, shape=[-1, a_size])
+                #self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
 
 
-                mu, sigma = self.policy_mean * A_BOUND_HIGH, self.policy_sigma + 1e-4
+                mu = self.policy_mean * A_BOUND_HIGH
+                sigma = self.policy_sigma + 1e-4
 
-                normal_dist = tf.distributions.Normal(mu, sigma)
+                normal_dist = tf.contrib.distributions.Normal(mu, sigma)
+                self.A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW, A_BOUND_HIGH)
 
+                td = tf.subtract(self.target_v, tf.reshape(self.value, [-1]), name='TD_error')
+                print("td: ", td)
+                #td = self.target_v - self.value
+                #value loss
+                self.value_loss = tf.reduce_mean(tf.square(td))
 
+                #action loss
+                log_prob = normal_dist.log_prob(self.actions, name='log_prob')
+                #self.print_log_prob = tf.Print(log_prob, [log_prob])
+                #reduced_log_prob = tf.reduce_sum(log_prob, 1)
+                self.exp_v = tf.multiply(log_prob, td, name="mult_log_td")
+                self.entropy = normal_dist.entropy()  # encourage exploration
+                self.exp_v = ENTROPY_BETA * self.entropy + self.exp_v
+                self.policy_loss = tf.reduce_mean(-self.exp_v)
 
-                # Loss functions
-                #self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))
-                # self.c_loss = tf.reduce_mean(tf.square(td))
-
-                log_prob = normal_dist.log_prob(self.a_his)
-                exp_v = log_prob * td
-                entropy = normal_dist.entropy()  # encourage exploration
-                self.exp_v = ENTROPY_BETA * entropy + exp_v
-                self.a_loss = tf.reduce_mean(-self.exp_v)
-
-                #self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))
-                #self.policy_loss = 0.5 * tf.reduce_sum(self.actions_diff * self.advantages)
-
-                #self.loss = 0.5 * self.value_loss + self.policy_loss - self.entropy * 0.01# + self.print_adv
+                self.loss = 0.5 * self.value_loss + self.policy_loss
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)

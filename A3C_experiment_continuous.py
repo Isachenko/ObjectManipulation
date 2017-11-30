@@ -7,8 +7,10 @@ import datetime
 import tensorflow as tf
 
 from ac_network_continuous import ACNetworkContinuous
+from ac_network_continuous_gaussian import ACNetworkContinuousGaussian
 from v_rep_environment import *
 from worker_continuous import WorkerContinuous
+
 
 import shutil
 
@@ -31,7 +33,7 @@ if not os.path.exists(frames_path):
 with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes', trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    master_network = ACNetworkContinuous(s_size, a_size, 'global', None)  # Generate global network
+    master_network = ACNetworkContinuousGaussian(s_size, a_size, 'global', None)  # Generate global network
     if num_workers == -1:
         num_workers = multiprocessing.cpu_count()  # Set workers at number of available CPU threads
     print("Number of workers: ", num_workers)

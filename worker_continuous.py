@@ -1,4 +1,5 @@
 from ac_network_continuous import ACNetworkContinuous
+from ac_network_continuous_gaussian import ACNetworkContinuousGaussian
 from utils.helper import *
 from utils.utils import *
 from config import *
@@ -22,7 +23,7 @@ class WorkerContinuous():
         self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
-        self.local_AC = ACNetworkContinuous(s_size, a_size, self.name, trainer)
+        self.local_AC = ACNetworkContinuousGaussian(s_size, a_size, self.name, trainer)
         self.update_local_ops = update_target_graph('global', self.name)
 
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
@@ -39,11 +40,11 @@ class WorkerContinuous():
         next_observations = rollout[:, 3]
         values = rollout[:, 5]
 
-        #print("observations:", observations)
-        #print("observations:", np.vstack(observations))
-        #print("actions:", actions)
-        #print("rewards:", rewards)
-        #print("values:", values)
+        print("observations:", observations)
+        print("observations:", np.vstack(observations))
+        print("actions:", actions)
+        print("rewards:", rewards)
+        print("values:", values)
 
         # Here we take the rewards and values from the rollout, and use them to
         # generate the advantage and discounted returns.
@@ -53,8 +54,8 @@ class WorkerContinuous():
         self.value_plus = np.asarray(values.tolist() + [bootstrap_value])
         advantages = rewards + gamma * self.value_plus[1:] - self.value_plus[:-1]
         advantages = discount(advantages, gamma)
-        targ_value = rewards + gamma * self.value_plus[1:]
 
+        print("discounted_rewards: ", discounted_rewards)
         # Update the global network using gradients from loss
         # Generate network statistics to periodically save
         feed_dict = {self.local_AC.target_v: discounted_rewards,
@@ -95,24 +96,14 @@ class WorkerContinuous():
                 while self.env.is_episode_finished() == False:
                     # Take an action using probabilities from policy network output.
                     a, v, rnn_state = sess.run(
-                        [self.local_AC.policy, self.local_AC.value, self.local_AC.state_out],
+                        [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
                         feed_dict={self.local_AC.inputs: [s],
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
                     a = a[0]
-                    # a = m_3, var_r
-                    #Random sometimes and add noise
-                    #if random.uniform(0, 1) < 0.01:
-                    #explore = np.random.normal(0.0, 0.1, self.a_size)
-                    a_sim = np.random.normal(a[0:self.a_size], a[self.a_size:], self.a_size)
+                    #print(a)
 
-                    #print("exp:", explore)
-                    #a = a + explore
-
-                    #print("act: ", a)
-                    np.clip(a_sim, 0.0, 1, out=a_sim)
-                    #print("act_1: ", a)
-                    self.env.make_action_continuous(a_sim)
+                    self.env.make_action_continuous(a)
 
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
@@ -146,10 +137,14 @@ class WorkerContinuous():
                     if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
                         # Since we don't know what the true final return is, we "bootstrap" from our current
                         # value estimation.
+                        print("time to train")
+                        #print(episode_buffer.shape)
+                        print(episode_buffer[0])
                         v1 = sess.run(self.local_AC.value,
                                       feed_dict={self.local_AC.inputs: [s],
                                                  self.local_AC.state_in[0]: rnn_state[0],
                                                  self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
+                        print("before train")
                         v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1)
                         episode_buffer = []
                         sess.run(self.update_local_ops)
