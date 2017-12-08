@@ -4,7 +4,7 @@ import tensorflow.contrib.slim as slim
 from utils import utils
 
 
-ENTROPY_BETA = 0.01
+ENTROPY_BETA = 0.05
 A_BOUND_LOW = 0
 A_BOUND_HIGH = 0.8
 
@@ -48,7 +48,7 @@ class ACNetworkContinuousGaussian():
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             self.policy_sigma = slim.fully_connected(rnn_out, a_size,
-                                               activation_fn=tf.nn.sigmoid,
+                                               activation_fn=tf.nn.relu6,
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             #self.policy_sigma = self.policy_sigma / 6
@@ -65,15 +65,19 @@ class ACNetworkContinuousGaussian():
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.print_adv = tf.Print(self.advantages, [self.advantages])
+                print("a_size: ", a_size)
                 self.actions_reshaped = tf.reshape(self.actions, shape=[-1, a_size])
                 #self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
 
 
-                mu = (self.policy_mean * A_BOUND_HIGH) / 6
-                sigma = self.policy_sigma + 1e-4
+                mu = (self.policy_mean * (A_BOUND_HIGH/2)) / 6
+                sigma = tf.exp((self.policy_sigma + 1e-4) / 12)
+                #self.print_mu = tf.Print(mu, [mu])
+
 
                 normal_dist = tf.contrib.distributions.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
-                self.A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW, A_BOUND_HIGH)
+                A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW, A_BOUND_HIGH)
+                self.A = A#tf.Print(A, [], summarize=a_size)
 
                 td = tf.subtract(self.target_v, tf.reshape(self.value, [-1]), name='TD_error')
                 print("td: ", td)
@@ -89,7 +93,7 @@ class ACNetworkContinuousGaussian():
                 self.policy_loss = tf.reduce_sum(-self.exp_v) #+ self.print_exp_v + self.print_entropy
                 self.mean_entropy = tf.reduce_mean(self.entropy)
 
-                self.loss = 10*self.value_loss + self.policy_loss #+ self.print_policy_loss
+                self.loss = 0.5*self.value_loss + self.policy_loss #+ self.print_policy_loss
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
