@@ -6,7 +6,7 @@ from utils import utils
 
 ENTROPY_BETA = 0.01
 A_BOUND_LOW = 0
-A_BOUND_HIGH = 1
+A_BOUND_HIGH = 0.8
 
 class ACNetworkContinuousGaussian():
     def __init__(self, s_size, a_size, scope, trainer):
@@ -78,7 +78,7 @@ class ACNetworkContinuousGaussian():
                 td = tf.subtract(self.target_v, tf.reshape(self.value, [-1]), name='TD_error')
                 print("td: ", td)
                 #value loss
-                self.value_loss = tf.reduce_mean(tf.square(td))
+                self.value_loss = 0.5*tf.reduce_sum(tf.square(td))
 
                 #action loss
                 log_prob = normal_dist.log_prob(self.actions, name='log_prob')
@@ -86,10 +86,10 @@ class ACNetworkContinuousGaussian():
                 self.exp_v = tf.multiply(log_prob, self.advantages, name="mult_log_td")
                 self.entropy = normal_dist.entropy()  # encourage exploration
                 self.exp_v = ENTROPY_BETA * self.entropy + self.exp_v
-                self.policy_loss = tf.reduce_mean(-self.exp_v) #+ self.print_exp_v + self.print_entropy
+                self.policy_loss = tf.reduce_sum(-self.exp_v) #+ self.print_exp_v + self.print_entropy
                 self.mean_entropy = tf.reduce_mean(self.entropy)
 
-                self.loss = self.value_loss + self.policy_loss #+ self.print_policy_loss
+                self.loss = 10*self.value_loss + self.policy_loss #+ self.print_policy_loss
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
