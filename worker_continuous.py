@@ -110,7 +110,7 @@ class WorkerContinuous():
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
                     else:
-                        r = self.env.get_reward()
+                        r = self.env.get_reward_for_left()
 
                     d = self.env.is_episode_finished()
                     if d == False:
