@@ -5,7 +5,7 @@ from utils import utils
 
 
 class AC_Network():
-    def __init__(self, s_size, a_size, scope, trainer):
+    def __init__(self, s_size, a_size, scope, trainer, vf):
         with tf.variable_scope(scope):
             # Input and visual encoding layers
             self.inputs = tf.placeholder(shape=[None, s_size], dtype=tf.float32)
@@ -63,7 +63,7 @@ class AC_Network():
                 self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))
                 self.policy_loss = -tf.reduce_sum(tf.log(self.responsible_outputs) * self.advantages)
-                self.loss = 0.5 * self.value_loss + self.policy_loss - self.entropy * 0.01
+                self.loss = vf * self.value_loss + self.policy_loss - self.entropy * 0.01
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)

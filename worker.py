@@ -6,7 +6,7 @@ import scipy.misc
 
 
 class Worker():
-    def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):
+    def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes,vf):
         self.name = "worker_" + str(name)
         self.number = name
         self.model_path = model_path
@@ -19,7 +19,7 @@ class Worker():
         self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
-        self.local_AC = AC_Network(s_size, a_size, self.name, trainer)
+        self.local_AC = AC_Network(s_size, a_size, self.name, trainer,vf)
         self.update_local_ops = update_target_graph('global', self.name)
 
         # The Below code is related to setting up the Doom environment

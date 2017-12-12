@@ -24,7 +24,7 @@ experiment = {  0 : "speed",
     }
 #vrep related params
 VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/wrong'
-
+vf= 0.5
 if len(sys.argv) > 1:
     s = int(sys.argv[2])
     SCENE_PATH = scenes[s]
@@ -32,6 +32,7 @@ if len(sys.argv) > 1:
         RANDOM = True
     else:
         RANDOM = False
+    vf = int(sys.argv[3])
 
 else:
     SCENE_PATH = '/scenes/uarm_gripper.ttt'
@@ -52,7 +53,8 @@ num_workers = 1
 
 #statistics save params
 now = datetime.datetime.now()
-results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S")
+
+results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S") +'_vf_'+ str(vf)
 if len(sys.argv) > 1:
     var1 = int(sys.argv[1])
     var2 = int(sys.argv[2])
@@ -65,6 +67,8 @@ archive_path = './archive'
 IMAGE_SAVE_TIME_STEP = 10
 STATISTICS_SAVE_TIME_STEP = 10
 MODEL_SAVE_TIME_STEP = 100
+
+
 
 PEREGRINE = False
 
