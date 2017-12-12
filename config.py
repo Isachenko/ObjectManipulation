@@ -32,7 +32,7 @@ if len(sys.argv) > 1:
         RANDOM = True
     else:
         RANDOM = False
-    vf = int(sys.argv[3])
+    vf = float(sys.argv[3])
 
 else:
     SCENE_PATH = '/scenes/uarm_gripper.ttt'
