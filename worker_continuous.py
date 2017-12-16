@@ -28,10 +28,11 @@ class WorkerContinuous():
 
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
         self.env = game
+        self.exp_decay = 0
 
 
 
-    def train(self, rollout, sess, gamma, bootstrap_value):
+    def train(self, rollout, sess, gamma, bootstrap_value, sigma):
         rollout = np.array(rollout)
         #print("rollout:", rollout)
         observations = rollout[:, 0]
@@ -63,7 +64,8 @@ class WorkerContinuous():
                      self.local_AC.actions: actions,
                      self.local_AC.advantages: advantages,
                      self.local_AC.state_in[0]: self.batch_rnn_state[0],
-                     self.local_AC.state_in[1]: self.batch_rnn_state[1]}
+                     self.local_AC.state_in[1]: self.batch_rnn_state[1],
+                     self.local_AC.policy_sigma: sigma}
         v_l, p_l, e_l, g_n, v_n, self.batch_rnn_state, _ = sess.run([self.local_AC.value_loss,
                                                                      self.local_AC.policy_loss,
                                                                      self.local_AC.mean_entropy,
@@ -78,6 +80,7 @@ class WorkerContinuous():
 
     def work(self, max_episode_length, gamma, sess, coord, saver):
         episode_count = sess.run(self.global_episodes)
+        #self.episode_number = episode_count
         total_steps = 0
         print("Starting worker " + str(self.number))
         with sess.as_default(), sess.graph.as_default(), coord.stop_on_exception():
@@ -88,6 +91,8 @@ class WorkerContinuous():
                 episode_frames = []
                 episode_reward = 0
                 episode_step_count = 0
+                episode_policy_sigma = np.ones(self.a_size)*(1/np.log(3+episode_count))
+                #print(episode_policy_sigma)
                 d = False
 
                 self.env.new_episode()
@@ -96,13 +101,15 @@ class WorkerContinuous():
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
                 while self.env.is_episode_finished() == False:
-                    # Take an action using probabilities from policy network output.
                     a, v, rnn_state = sess.run(
                         [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
                         feed_dict={self.local_AC.inputs: [s],
                                    self.local_AC.state_in[0]: rnn_state[0],
-                                   self.local_AC.state_in[1]: rnn_state[1]})
-                    a = a[0]
+                                   self.local_AC.state_in[1]: rnn_state[1],
+                                   self.local_AC.policy_sigma: episode_policy_sigma})
+
+                    #print(a)
+                    #a = a[0]
                     #print(a)
 
                     self.env.make_action_continuous(a)
@@ -110,7 +117,7 @@ class WorkerContinuous():
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
                     else:
-                        r = self.env.get_reward_for_left()
+                        r = self.env.get_reward()
 
                     d = self.env.is_episode_finished()
                     if d == False:
@@ -147,7 +154,7 @@ class WorkerContinuous():
                                                  self.local_AC.state_in[0]: rnn_state[0],
                                                  self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
                         #print("before train")
-                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1)
+                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1, episode_policy_sigma)
                         episode_buffer = []
                         sess.run(self.update_local_ops)
                     if d == True:
@@ -159,7 +166,7 @@ class WorkerContinuous():
 
                 # Update the network using the episode buffer at the end of the episode.
                 if len(episode_buffer) != 0:
-                    v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0)
+                    v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0, episode_policy_sigma)
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
                 #print("Episode count:",episode_count)

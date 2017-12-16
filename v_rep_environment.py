@@ -12,6 +12,7 @@ sys.path.append(VREP_API_PATH)
 import vrep
 
 FIRST_VREP_PORT = 19997 #port for first V_REP connection
+MAX_VALUE = 1.0
 
 class VRepEnvironment():
 
@@ -219,7 +220,9 @@ class VRepEnvironment():
         if self.current_step < self.episode_length:
             actions = [self.rotate_clockwise_continuous, self.rotate_front_continuous, self.rotate_up_continuous]
             for i, action in enumerate(actions):
-                action(value[i*2] - value[(i*2)+1])
+                v = value[i*2] - value[(i*2)+1]
+                v = max(-MAX_VALUE,min(MAX_VALUE, v))
+                action(v)
 
             vrep.simxSynchronousTrigger(self.connection_id)
             self.current_step += 1
