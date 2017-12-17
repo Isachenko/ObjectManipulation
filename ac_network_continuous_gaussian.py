@@ -40,7 +40,7 @@ class ACNetworkContinuousGaussian():
                 time_major=False)
             lstm_c, lstm_h = lstm_state
             self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
-            rnn_out = tf.reshape(lstm_outputs, [-1, 256])
+            rnn_out = tf.reshape(hidden, [-1, 256])
 
             # Output layers for policy and value estimations
             self.policy_mean = slim.fully_connected(rnn_out, a_size,

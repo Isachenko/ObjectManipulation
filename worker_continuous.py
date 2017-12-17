@@ -177,9 +177,9 @@ class WorkerContinuous():
                         print("Saved Model")
 
 
-                    mean_reward = np.mean(self.episode_rewards[-5:])
-                    mean_length = np.mean(self.episode_lengths[-5:])
-                    mean_value = np.mean(self.episode_mean_values[-5:])
+                    mean_reward = np.mean(self.episode_rewards[:])
+                    mean_length = np.mean(self.episode_lengths[:])
+                    mean_value = np.mean(self.episode_mean_values[:])
                     summary = tf.Summary()
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
                     summary.value.add(tag='Perf/Length', simple_value=float(mean_length))
@@ -193,7 +193,7 @@ class WorkerContinuous():
 
                     self.summary_writer.flush()
 
-                    print(self.name, ": episode: ", episode_count, "mean reward: ", mean_reward)
+                    print(self.name, ": episode: ", episode_count, "mean reward: ", mean_reward, 'mean_value',mean_value)
                 if self.number == 0:
                     sess.run(self.increment)
                 episode_count += 1
