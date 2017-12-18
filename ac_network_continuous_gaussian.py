@@ -9,7 +9,7 @@ A_BOUND_LOW = 0
 A_BOUND_HIGH = 0.8
 
 class ACNetworkContinuousGaussian():
-    def __init__(self, s_size, a_size, scope, trainer):
+    def __init__(self, s_size, a_size, scope, trainer,vf):
 
 
         with tf.variable_scope(scope):
@@ -93,7 +93,7 @@ class ACNetworkContinuousGaussian():
                 self.policy_loss = tf.reduce_sum(-self.exp_v) #+ self.print_exp_v + self.print_entropy
                 self.mean_entropy = tf.reduce_mean(self.entropy)
 
-                self.loss = 0.5*self.value_loss + self.policy_loss #+ self.print_policy_loss
+                self.loss = vf*self.value_loss + self.policy_loss #+ self.print_policy_loss
 
                 # Get gradients from local network using local losses
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
