@@ -58,6 +58,15 @@ class ACNetworkContinuousGaussian():
                                               weights_initializer=utils.normalized_columns_initializer(1.0),
                                               biases_initializer=None)
 
+            mu = (self.policy_mean * (A_BOUND_HIGH / 2)) / 6
+            sigma = tf.exp((self.policy_sigma + 1e-4) / 12)
+            # self.print_mu = tf.Print(mu, [mu])
+
+
+            normal_dist = tf.contrib.distributions.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
+            A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW, A_BOUND_HIGH)
+            self.A = A  # tf.Print(A, [], summarize=a_size)
+
 
             # Only the worker network need ops for loss functions and gradient updating.
             if scope != 'global':
@@ -69,15 +78,6 @@ class ACNetworkContinuousGaussian():
                 self.actions_reshaped = tf.reshape(self.actions, shape=[-1, a_size])
                 #self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
 
-
-                mu = (self.policy_mean * (A_BOUND_HIGH/2)) / 6
-                sigma = tf.exp((self.policy_sigma + 1e-4) / 12)
-                #self.print_mu = tf.Print(mu, [mu])
-
-
-                normal_dist = tf.contrib.distributions.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
-                A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), A_BOUND_LOW, A_BOUND_HIGH)
-                self.A = A#tf.Print(A, [], summarize=a_size)
 
                 td = tf.subtract(self.target_v, tf.reshape(self.value, [-1]), name='TD_error')
                 print("td: ", td)
