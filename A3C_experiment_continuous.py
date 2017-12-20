@@ -43,7 +43,7 @@ with tf.device("/cpu:0"):
         port = FIRST_VREP_PORT + i
         env = VRepEnvironment(port)
         workers.append(WorkerContinuous(env, i, s_size, a_size, trainer, model_path, global_episodes,vf))
-    saver = tf.train.Saver(max_to_keep=5)
+    saver = tf.train.Saver(max_to_keep=1)
 
 with tf.Session() as sess:
     coord = tf.train.Coordinator()
