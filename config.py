@@ -25,7 +25,7 @@ experiment = {  0 : "speed",
 #vrep related params
 VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/wrong'
 num_workers = 1
-vf= 0.5
+vf= 0.7
 
 
 if len(sys.argv) > 1:
@@ -39,7 +39,7 @@ if len(sys.argv) > 1:
     vf = float(sys.argv[4])
 
 else:
-    SCENE_PATH = '/scenes/uarm_gripper.ttt'
+    SCENE_PATH = "/scenes/uarm_gripper_big.ttt"
 
 VREP_SCENE_PATH = MAIN_SCRIPT_PATH + SCENE_PATH
 REWARD_FUNCTION = ""

@@ -114,8 +114,11 @@ class Worker():
                         feed_dict={self.local_AC.inputs: [s],
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
+                    a_dist[0] = np.power(a_dist[0], 2)
+                    a_dist[0] = a_dist[0]/np.sum(a_dist[0])
                     a = np.random.choice(a_dist[0], p=a_dist[0])
                     a = np.argmax(a_dist == a)
+                    #print(a_dist[0])
                     self.env.make_action(self.actions[a])
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()

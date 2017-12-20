@@ -105,7 +105,7 @@ class WorkerContinuous():
                     a = a[0]
                     #print(a)
 
-                    self.env.make_action_continuous(a)
+                    self.env.make_action_continuous_tanh(a)
 
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
@@ -162,7 +162,7 @@ class WorkerContinuous():
                     v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0)
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
-                #print("Episode count:",episode_count)
+                print(self.name, ": episode: ", episode_count, "mean reward: ", episode_reward, 'mean_value', np.mean(episode_values))
                 if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
                     if self.number == 0 and episode_count % IMAGE_SAVE_TIME_STEP == 0:
                         time_per_step = 0.05

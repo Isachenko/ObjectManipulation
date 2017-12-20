@@ -40,7 +40,7 @@ class VRepEnvironment():
         print(bash_command)
         self.vrep_process = subprocess.Popen(args)
         print("sleep")
-        time.sleep(20)
+        time.sleep(5)
         print("woke up")
 
         self.connect_to_vrep()
@@ -214,6 +214,15 @@ class VRepEnvironment():
         reward = current_pos
         #print(reward)
         return reward
+
+    def make_action_continuous_tanh(self,value):
+        if self.current_step < self.episode_length:
+            actions = [self.rotate_clockwise_continuous, self.rotate_front_continuous, self.rotate_up_continuous]
+            for i, action in enumerate(actions):
+                action(value[i])
+
+            vrep.simxSynchronousTrigger(self.connection_id)
+            self.current_step += 1
 
     def make_action_continuous(self,value):
         if self.current_step < self.episode_length:

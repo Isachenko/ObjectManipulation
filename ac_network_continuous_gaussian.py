@@ -5,7 +5,7 @@ from utils import utils
 
 
 ENTROPY_BETA = 0.05
-A_BOUND_LOW = 0
+A_BOUND_LOW = -0.8
 A_BOUND_HIGH = 0.8
 
 class ACNetworkContinuousGaussian():
@@ -40,11 +40,11 @@ class ACNetworkContinuousGaussian():
                 time_major=False)
             lstm_c, lstm_h = lstm_state
             self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
-            rnn_out = tf.reshape(hidden, [-1, 256])
+            rnn_out = tf.reshape(lstm_outputs, [-1, 256])
 
             # Output layers for policy and value estimations
             self.policy_mean = slim.fully_connected(rnn_out, a_size,
-                                               activation_fn=tf.nn.relu6,
+                                               activation_fn=tf.nn.tanh,
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             self.policy_sigma = slim.fully_connected(rnn_out, a_size,
@@ -58,8 +58,8 @@ class ACNetworkContinuousGaussian():
                                               weights_initializer=utils.normalized_columns_initializer(1.0),
                                               biases_initializer=None)
 
-            mu = (self.policy_mean * (A_BOUND_HIGH / 2)) / 6
-            sigma = tf.exp((self.policy_sigma + 1e-4) / 12)
+            mu = self.policy_mean
+            sigma = tf.exp(self.policy_sigma + 1e-4)
             # self.print_mu = tf.Print(mu, [mu])
 
 
