@@ -4,9 +4,9 @@ import tensorflow.contrib.slim as slim
 from utils import utils
 
 
-ENTROPY_BETA = 0.05
-A_BOUND_LOW = -0.8
-A_BOUND_HIGH = 0.8
+ENTROPY_BETA = 0.01
+A_BOUND_LOW = -1
+A_BOUND_HIGH = 1
 
 class ACNetworkContinuousGaussian():
     def __init__(self, s_size, a_size, scope, trainer,vf):
@@ -59,8 +59,12 @@ class ACNetworkContinuousGaussian():
                                               biases_initializer=None)
 
             mu = self.policy_mean
-            sigma = tf.exp(self.policy_sigma + 1e-4)
-            # self.print_mu = tf.Print(mu, [mu])
+            sigma = tf.exp(self.policy_sigma/3 + 1e-4)/8
+            #self.print_mu = tf.Print(mu, [mu],message='mu')
+            #self.print_sigma = tf.Print(sigma, [sigma],message='sigma')
+            #mu = self.print_mu
+            #sigma = self.print_sigma
+
 
 
             normal_dist = tf.contrib.distributions.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
@@ -73,7 +77,7 @@ class ACNetworkContinuousGaussian():
                 self.actions = tf.placeholder(shape=[None, a_size], dtype=tf.float32)
                 self.target_v = tf.placeholder(shape=[None], dtype=tf.float32)
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
-                self.print_adv = tf.Print(self.advantages, [self.advantages])
+                #self.print_adv = tf.Print(self.advantages, [self.advantages])
                 print("a_size: ", a_size)
                 self.actions_reshaped = tf.reshape(self.actions, shape=[-1, a_size])
                 #self.actions_diff = tf.reduce_sum(tf.square(self.actions_reshaped - self.policy), [1]) #think more
@@ -99,7 +103,7 @@ class ACNetworkContinuousGaussian():
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
                 self.gradients = tf.gradients(self.loss, local_vars)
                 self.var_norms = tf.global_norm(local_vars)
-                grads, self.grad_norms = tf.clip_by_global_norm(self.gradients, 40.0)
+                grads, self.grad_norms = tf.clip_by_global_norm(self.gradients, 5.0)
 
                 # Apply local gradients to global network
                 global_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'global')
