@@ -91,7 +91,7 @@ class WorkerContinuous():
                 episode_frames = []
                 episode_reward = 0
                 episode_step_count = 0
-                episode_policy_sigma = np.ones(self.a_size)*(1/np.log(3+episode_count))
+                episode_policy_sigma = np.ones(self.a_size)*(1/np.log(3+episode_count**2))
                 #print(episode_policy_sigma)
                 d = False
 
@@ -188,12 +188,13 @@ class WorkerContinuous():
                     mean_length = np.mean(self.episode_lengths[-5:])
                     mean_value = np.mean(self.episode_mean_values[-5:])
                     summary = tf.Summary()
+                    summary.value.add(tag='Params/Sigma', simple_value=float(episode_policy_sigma[0]))
+                    summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
                     summary.value.add(tag='Perf/Length', simple_value=float(mean_length))
                     summary.value.add(tag='Perf/Value', simple_value=float(mean_value))
                     summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
                     summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
-                    summary.value.add(tag='Losses/Entropy', simple_value=float(e_l))
                     summary.value.add(tag='Losses/Grad Norm', simple_value=float(g_n))
                     summary.value.add(tag='Losses/Var Norm', simple_value=float(v_n))
                     self.summary_writer.add_summary(summary, episode_count)

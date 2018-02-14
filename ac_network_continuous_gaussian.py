@@ -77,7 +77,7 @@ class ACNetworkContinuousGaussian():
 
             #Action selection
             A = tf.clip_by_value(tf.squeeze(normal_dist.sample(1), axis=0), ACTION_LOW, ACTION_HIGHT)
-            self.A = tf.Print(A, [A], summarize=a_size)
+            self.A = A#tf.Print(A, [A], summarize=a_size)
 
 
             # Only the worker network need ops for loss functions and gradient updating.
@@ -100,7 +100,7 @@ class ACNetworkContinuousGaussian():
                 #reduced_log_prob = tf.reduce_sum(log_prob, 1)
                 self.exp_v = tf.multiply(log_prob, self.advantages, name="mult_log_td")
                 self.entropy = normal_dist.entropy()  # encourage exploration
-                self.exp_v = ENTROPY_BETA * self.entropy + self.exp_v
+                self.exp_v = self.exp_v #+ ENTROPY_BETA * self.entropy
                 self.policy_loss = tf.reduce_sum(-self.exp_v) #+ self.print_exp_v + self.print_entropy
                 self.mean_entropy = tf.reduce_mean(self.entropy)
 
