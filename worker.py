@@ -6,7 +6,7 @@ import scipy.misc
 
 
 class Worker():
-    def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes,vf):
+    def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes, vf):
         self.name = "worker_" + str(name)
         self.number = name
         self.model_path = model_path
@@ -19,7 +19,7 @@ class Worker():
         self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
-        self.local_AC = AC_Network(s_size, a_size, self.name, trainer,vf)
+        self.local_AC = AC_Network(s_size, a_size, self.name, trainer, vf)
         self.update_local_ops = update_target_graph('global', self.name)
 
         # The Below code is related to setting up the Doom environment
@@ -104,7 +104,6 @@ class Worker():
                 s = self.env.get_state().image
                 s = process_frame(s)
 
-
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
                 while self.env.is_episode_finished() == False:
@@ -115,10 +114,11 @@ class Worker():
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
                     a_dist[0] = np.power(a_dist[0], 2)
-                    a_dist[0] = a_dist[0]/np.sum(a_dist[0])
+                    a_dist[0] = a_dist[0] / np.sum(a_dist[0])
                     a = np.random.choice(a_dist[0], p=a_dist[0])
                     a = np.argmax(a_dist == a)
-                    #print(a_dist[0])
+
+                    # print(a_dist[0])
                     self.env.make_action(self.actions[a])
                     if len(sys.argv) > 1:
                         r = self.env.get_reward_command_line()
@@ -169,7 +169,7 @@ class Worker():
                     v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0)
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
-                #print("Episode count:",episode_count)
+                # print("Episode count:",episode_count)
                 if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
                     if self.number == 0 and episode_count % IMAGE_SAVE_TIME_STEP == 0:
                         time_per_step = 0.05
@@ -177,13 +177,12 @@ class Worker():
                         make_gif(images, frames_path + '/image' + str(episode_count) + '.gif',
                                  duration=len(images) * time_per_step, true_image=True, salience=False)
 
-                        #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
-                        #scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
+                        # scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
+                        # scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
 
                     if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.number == 0:
                         saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
                         print("Saved Model")
-
 
                     mean_reward = np.mean(self.episode_rewards[-5:])
                     mean_length = np.mean(self.episode_lengths[-5:])
@@ -205,7 +204,6 @@ class Worker():
                 if self.number == 0:
                     sess.run(self.increment)
                 episode_count += 1
-
 
                 if episode_count == MAX_NUMBER_OF_EPISODES:
                     self.env.__del__()
