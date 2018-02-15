@@ -109,7 +109,7 @@ class WorkerContinuous():
                                    self.local_AC.policy_sigma: episode_policy_sigma})
 
                     #print(a)
-                    #a = a[0]
+                    a = a[0]
                     #print(a)
 
                     self.env.make_action_continuous(a)
@@ -184,15 +184,16 @@ class WorkerContinuous():
                         print("Saved Model")
 
 
-                    mean_reward = np.mean(self.episode_rewards[-5:])
-                    mean_length = np.mean(self.episode_lengths[-5:])
-                    mean_value = np.mean(self.episode_mean_values[-5:])
+                    mean_reward = np.mean(self.episode_rewards[-10:])
+                    mean_length = np.mean(self.episode_lengths[-10:])
+                    mean_value = np.mean(self.episode_mean_values[-10:])
                     summary = tf.Summary()
                     summary.value.add(tag='Params/Sigma', simple_value=float(episode_policy_sigma[0]))
                     summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
                     summary.value.add(tag='Perf/Length', simple_value=float(mean_length))
                     summary.value.add(tag='Perf/Value', simple_value=float(mean_value))
+                    summary.value.add(tag='Perf/MaxReward', simple_value=float(np.amax(self.episode_rewards[-10:])))
                     summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
                     summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
                     summary.value.add(tag='Losses/Grad Norm', simple_value=float(g_n))
