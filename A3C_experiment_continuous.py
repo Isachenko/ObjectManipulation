@@ -5,6 +5,7 @@ import datetime
 
 
 import tensorflow as tf
+print(tf.__version__)
 
 from ac_network_continuous import ACNetworkContinuous
 from ac_network_continuous_gaussian import ACNetworkContinuousGaussian

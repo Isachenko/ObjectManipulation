@@ -8,6 +8,7 @@ import numpy as np
 import scipy.misc
 
 
+
 class WorkerContinuous():
     def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes):
         self.a_size = a_size

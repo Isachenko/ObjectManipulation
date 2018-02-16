@@ -31,6 +31,7 @@ class ACNetworkContinuousGaussian():
                                      inputs=self.conv1, num_outputs=32,
                                      kernel_size=[4, 4], stride=[2, 2], padding='VALID')
             hidden = slim.fully_connected(slim.flatten(self.conv2), 256, activation_fn=tf.nn.elu)
+            hidden_2 = slim.fully_connected(slim.flatten(hidden), 256, activation_fn=tf.nn.elu)
 
             # Recurrent network for temporal dependencies
             lstm_cell = tf.contrib.rnn.BasicLSTMCell(256, state_is_tuple=True)
@@ -48,7 +49,8 @@ class ACNetworkContinuousGaussian():
                 time_major=False)
             lstm_c, lstm_h = lstm_state
             self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
-            rnn_out = tf.reshape(hidden, [-1, 256])
+            rnn_out = tf.reshape(hidden_2, [-1, 256])
+            #rnn_out = tf.reshape(lstm_outputs, [-1, 256])
 
             # Output layers for policy and value estimations
             self.policy_mean = slim.fully_connected(rnn_out, a_size,
@@ -110,7 +112,7 @@ class ACNetworkContinuousGaussian():
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
                 self.gradients = tf.gradients(self.loss, local_vars)
                 self.var_norms = tf.global_norm(local_vars)
-                grads, self.grad_norms = tf.clip_by_global_norm(self.gradients, 5.0)
+                grads, self.grad_norms = tf.clip_by_global_norm(self.gradients, 40.0)
 
                 # Apply local gradients to global network
                 global_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'global')
