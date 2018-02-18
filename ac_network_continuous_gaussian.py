@@ -33,25 +33,25 @@ class ACNetworkContinuousGaussian():
             hidden = slim.fully_connected(slim.flatten(self.conv2), 256, activation_fn=tf.nn.elu)
             hidden_2 = slim.fully_connected(slim.flatten(hidden), 256, activation_fn=tf.nn.elu)
 
-            # Recurrent network for temporal dependencies
-            # lstm_cell = tf.contrib.rnn.BasicLSTMCell(256, state_is_tuple=True)
-            # c_init = np.zeros((1, lstm_cell.state_size.c), np.float32)
-            # h_init = np.zeros((1, lstm_cell.state_size.h), np.float32)
-            # self.state_init = [c_init, h_init]
-            # c_in = tf.placeholder(tf.float32, [1, lstm_cell.state_size.c])
-            # h_in = tf.placeholder(tf.float32, [1, lstm_cell.state_size.h])
-            # self.state_in = (c_in, h_in)
-            # rnn_in = tf.expand_dims(hidden, [0])
-            # step_size = tf.shape(self.imageIn)[:1]
-            # state_in = tf.contrib.rnn.LSTMStateTuple(c_in, h_in)
-            # lstm_outputs, lstm_state = tf.nn.dynamic_rnn(
-            #     lstm_cell, rnn_in, initial_state=state_in, sequence_length=step_size,
-            #     time_major=False)
-            # lstm_c, lstm_h = lstm_state
-            # self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
-            #
-            #
-            #rnn_out = tf.reshape(lstm_outputs, [-1, 256])
+            #Recurrent network for temporal dependencies
+            lstm_cell = tf.contrib.rnn.BasicLSTMCell(256, state_is_tuple=True)
+            c_init = np.zeros((1, lstm_cell.state_size.c), np.float32)
+            h_init = np.zeros((1, lstm_cell.state_size.h), np.float32)
+            self.state_init = [c_init, h_init]
+            c_in = tf.placeholder(tf.float32, [1, lstm_cell.state_size.c])
+            h_in = tf.placeholder(tf.float32, [1, lstm_cell.state_size.h])
+            self.state_in = (c_in, h_in)
+            rnn_in = tf.expand_dims(hidden, [0])
+            step_size = tf.shape(self.imageIn)[:1]
+            state_in = tf.contrib.rnn.LSTMStateTuple(c_in, h_in)
+            lstm_outputs, lstm_state = tf.nn.dynamic_rnn(
+                lstm_cell, rnn_in, initial_state=state_in, sequence_length=step_size,
+                time_major=False)
+            lstm_c, lstm_h = lstm_state
+            self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
+
+
+            rnn_out = tf.reshape(lstm_outputs, [-1, 256])
 
             rnn_out = tf.reshape(hidden_2, [-1, 256])
 
