@@ -99,110 +99,111 @@ class WorkerContinuous():
                 self.env.new_episode()
                 s = self.env.get_state().image
                 s = process_frame(s)
-                rnn_state = self.local_AC.state_init
-                self.batch_rnn_state = rnn_state
-                while self.env.is_episode_finished() == False:
-                    a, v, rnn_state = sess.run(
-                        [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
-                        feed_dict={self.local_AC.inputs: [s],
-                                   self.local_AC.state_in[0]: rnn_state[0],
-                                   self.local_AC.state_in[1]: rnn_state[1],
-                                   self.local_AC.policy_sigma: episode_policy_sigma})
+                if(np.average(s) != 1):                    # Not do anything until get a image that is not black from the camera
+                    rnn_state = self.local_AC.state_init
+                    self.batch_rnn_state = rnn_state
+                    while self.env.is_episode_finished() == False:
+                        a, v, rnn_state = sess.run(
+                            [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
+                            feed_dict={self.local_AC.inputs: [s],
+                                       self.local_AC.state_in[0]: rnn_state[0],
+                                       self.local_AC.state_in[1]: rnn_state[1],
+                                       self.local_AC.policy_sigma: episode_policy_sigma})
 
-                    #print(a)
-                    a = a[0]
-                    #print(a)
+                        #print(a)
+                        a = a[0]
+                        #print(a)
 
-                    self.env.make_action_continuous(a)
+                        self.env.make_action_continuous(a)
 
-                    if len(sys.argv) > 1:
-                        r = self.env.get_reward_command_line()
-                    else:
-                        r = self.env.get_reward()
+                        if len(sys.argv) > 1:
+                            r = self.env.get_reward_command_line()
+                        else:
+                            r = self.env.get_reward()
 
-                    d = self.env.is_episode_finished()
-                    if d == False:
-                        s1 = self.env.get_state().image
-                        if self.number == 0:
-                            side_s = self.env.get_state().side_image
-                            frame = process_gif(s1, side_s)
-                            episode_frames.append(frame)
-
-
-                        s1 = process_frame(s1)
-                    else:
-                        s1 = s
-
-                    #print("s", s)
-                    episode_buffer.append([s, a, r, s1, d, v[0, 0]])
-                    episode_values.append(v[0, 0])
-
-                    episode_reward += r
-                    s = s1
-                    total_steps += 1
-                    episode_step_count += 1
-
-                    # If the episode hasn't ended, but the experience buffer is full, then we
-                    # make an update step using that experience rollout.
-                    if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
-                        # Since we don't know what the true final return is, we "bootstrap" from our current
-                        # value estimation.
-                        #print("time to train")
-                        #print(episode_buffer.shape)
-                        #print(episode_buffer[0])
-                        v1 = sess.run(self.local_AC.value,
-                                      feed_dict={self.local_AC.inputs: [s],
-                                                 self.local_AC.state_in[0]: rnn_state[0],
-                                                 self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
-                        #print("before train")
-                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1, episode_policy_sigma)
-                        episode_buffer = []
-                        sess.run(self.update_local_ops)
-                    if d == True:
-                        break
-
-                self.episode_rewards.append(episode_reward)
-                self.episode_lengths.append(episode_step_count)
-                self.episode_mean_values.append(np.mean(episode_values))
-
-                # Update the network using the episode buffer at the end of the episode.
-                if len(episode_buffer) != 0:
-                    v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0, episode_policy_sigma)
-
-                # Periodically save gifs of episodes, model parameters, and summary statistics.
-                #print("Episode count:",episode_count)
-                if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
-                    if self.number == 0 and episode_count % IMAGE_SAVE_TIME_STEP == 0:
-                        time_per_step = 0.05
-                        images = np.array(episode_frames)
-                        make_gif(images, frames_path + '/image' + str(episode_count) + '.gif',
-                                 duration=len(images) * time_per_step, true_image=True, salience=False)
-                        #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
-                        #scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
-
-                    if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.number == 0:
-                        saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
-                        print("Saved Model")
+                        d = self.env.is_episode_finished()
+                        if d == False:
+                            s1 = self.env.get_state().image
+                            if self.number == 0:
+                                side_s = self.env.get_state().side_image
+                                frame = process_gif(s1, side_s)
+                                episode_frames.append(frame)
 
 
-                    mean_reward = np.mean(self.episode_rewards[-10:])
-                    mean_length = np.mean(self.episode_lengths[-10:])
-                    mean_value = np.mean(self.episode_mean_values[-10:])
-                    summary = tf.Summary()
-                    summary.value.add(tag='Params/Sigma', simple_value=float(episode_policy_sigma[0]))
-                    summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
-                    summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
-                    summary.value.add(tag='Other/Value', simple_value=float(mean_value))
-                    summary.value.add(tag='Perf/MaxReward', simple_value=float(np.amax(self.episode_rewards[-10:])))
-                    summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
-                    summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
-                    summary.value.add(tag='Losses/Grad Norm', simple_value=float(g_n))
-                    summary.value.add(tag='Losses/Var Norm', simple_value=float(v_n))
-                    self.summary_writer.add_summary(summary, episode_count)
+                            s1 = process_frame(s1)
+                        else:
+                            s1 = s
 
-                    self.summary_writer.flush()
+                        #print("s", s)
+                        episode_buffer.append([s, a, r, s1, d, v[0, 0]])
+                        episode_values.append(v[0, 0])
 
-                    print(self.name, ": episode: ", episode_count, "mean reward: ", mean_reward)
+                        episode_reward += r
+                        s = s1
+                        total_steps += 1
+                        episode_step_count += 1
+
+                        # If the episode hasn't ended, but the experience buffer is full, then we
+                        # make an update step using that experience rollout.
+                        if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
+                            # Since we don't know what the true final return is, we "bootstrap" from our current
+                            # value estimation.
+                            #print("time to train")
+                            #print(episode_buffer.shape)
+                            #print(episode_buffer[0])
+                            v1 = sess.run(self.local_AC.value,
+                                          feed_dict={self.local_AC.inputs: [s],
+                                                     self.local_AC.state_in[0]: rnn_state[0],
+                                                     self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
+                            #print("before train")
+                            v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1, episode_policy_sigma)
+                            episode_buffer = []
+                            sess.run(self.update_local_ops)
+                        if d == True:
+                            break
+
+                    self.episode_rewards.append(episode_reward)
+                    self.episode_lengths.append(episode_step_count)
+                    self.episode_mean_values.append(np.mean(episode_values))
+
+                    # Update the network using the episode buffer at the end of the episode.
+                    if len(episode_buffer) != 0:
+                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0, episode_policy_sigma)
+
+                    # Periodically save gifs of episodes, model parameters, and summary statistics.
+                    #print("Episode count:",episode_count)
+                    if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
+                        if self.number == 0 and episode_count % IMAGE_SAVE_TIME_STEP == 0:
+                            time_per_step = 0.05
+                            images = np.array(episode_frames)
+                            make_gif(images, frames_path + '/image' + str(episode_count) + '.gif',
+                                     duration=len(images) * time_per_step, true_image=True, salience=False)
+                            #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
+                            #scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
+
+                        if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.number == 0:
+                            saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
+                            print("Saved Model")
+
+
+                        mean_reward = np.mean(self.episode_rewards[-10:])
+                        mean_length = np.mean(self.episode_lengths[-10:])
+                        mean_value = np.mean(self.episode_mean_values[-10:])
+                        summary = tf.Summary()
+                        summary.value.add(tag='Params/Sigma', simple_value=float(episode_policy_sigma[0]))
+                        summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
+                        summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
+                        summary.value.add(tag='Other/Value', simple_value=float(mean_value))
+                        summary.value.add(tag='Perf/MaxReward', simple_value=float(np.amax(self.episode_rewards[-10:])))
+                        summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
+                        summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
+                        summary.value.add(tag='Losses/Grad Norm', simple_value=float(g_n))
+                        summary.value.add(tag='Losses/Var Norm', simple_value=float(v_n))
+                        self.summary_writer.add_summary(summary, episode_count)
+
+                        self.summary_writer.flush()
+
+                        print(self.name, ": episode: ", episode_count, "mean reward: ", mean_reward)
                 if self.number == 0:
                     sess.run(self.increment)
                 episode_count += 1
