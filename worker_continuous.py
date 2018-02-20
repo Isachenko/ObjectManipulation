@@ -102,7 +102,7 @@ class WorkerContinuous():
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
                 while self.env.is_episode_finished() == False:
-                    print(s)
+                    #print(s)
                     if (np.average(s) != 1 or np.average(s) != 0):
                         a, v, rnn_state = sess.run(
                             [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
