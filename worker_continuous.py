@@ -19,6 +19,7 @@ class WorkerContinuous():
         self.global_episodes = global_episodes
         self.increment = self.global_episodes.assign_add(1)
         self.episode_rewards = []
+        self.black_framse_counter = []
         self.episode_lengths = []
         self.episode_mean_values = []
         self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
@@ -101,68 +102,71 @@ class WorkerContinuous():
                 s = process_frame(s)
                 rnn_state = self.local_AC.state_init
                 self.batch_rnn_state = rnn_state
+                number_of_black_frames = 0
                 while self.env.is_episode_finished() == False:
-                    #print(s)
-                    if (np.average(s) != 1 or np.average(s) != 0):
-                        a, v, rnn_state = sess.run(
-                            [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
-                            feed_dict={self.local_AC.inputs: [s],
-                                       self.local_AC.state_in[0]: rnn_state[0],
-                                       self.local_AC.state_in[1]: rnn_state[1],
-                                       self.local_AC.policy_sigma: episode_policy_sigma})
+                    #print(s, np.average(s), np.average(s) != 0)
+                    if (np.average(s) == 0 ):
+                        number_of_black_frames += 1
+                    a, v, rnn_state = sess.run(
+                        [self.local_AC.A, self.local_AC.value, self.local_AC.state_out],
+                        feed_dict={self.local_AC.inputs: [s],
+                                   self.local_AC.state_in[0]: rnn_state[0],
+                                   self.local_AC.state_in[1]: rnn_state[1],
+                                   self.local_AC.policy_sigma: episode_policy_sigma})
 
-                        #print(a)
-                        a = a[0]
-                        #print(a)
+                    #print(a)
+                    a = a[0]
+                    #print(a)
 
-                        self.env.make_action_continuous(a)
+                    self.env.make_action_continuous(a)
 
-                        if len(sys.argv) > 1:
-                            r = self.env.get_reward_command_line()
-                        else:
-                            r = self.env.get_reward()
+                    if len(sys.argv) > 1:
+                        r = self.env.get_reward_command_line()
+                    else:
+                        r = self.env.get_reward()
 
-                        d = self.env.is_episode_finished()
-                        if d == False:
-                            s1 = self.env.get_state().image
-                            if self.number == 0:
-                                side_s = self.env.get_state().side_image
-                                frame = process_gif(s1, side_s)
-                                episode_frames.append(frame)
+                    d = self.env.is_episode_finished()
+                    if d == False:
+                        s1 = self.env.get_state().image
+                        if self.number == 0:
+                            side_s = self.env.get_state().side_image
+                            frame = process_gif(s1, side_s)
+                            episode_frames.append(frame)
 
 
-                            s1 = process_frame(s1)
-                        else:
-                            s1 = s
+                        s1 = process_frame(s1)
+                    else:
+                        s1 = s
 
-                        #print("s", s)
-                        episode_buffer.append([s, a, r, s1, d, v[0, 0]])
-                        episode_values.append(v[0, 0])
+                    #print("s", s)
+                    episode_buffer.append([s, a, r, s1, d, v[0, 0]])
+                    episode_values.append(v[0, 0])
 
-                        episode_reward += r
-                        s = s1
-                        total_steps += 1
-                        episode_step_count += 1
+                    episode_reward += r
+                    s = s1
+                    total_steps += 1
+                    episode_step_count += 1
 
-                        # If the episode hasn't ended, but the experience buffer is full, then we
-                        # make an update step using that experience rollout.
-                        if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
-                            # Since we don't know what the true final return is, we "bootstrap" from our current
-                            # value estimation.
-                            #print("time to train")
-                            #print(episode_buffer.shape)
-                            #print(episode_buffer[0])
-                            v1 = sess.run(self.local_AC.value,
-                                          feed_dict={self.local_AC.inputs: [s],
-                                                     self.local_AC.state_in[0]: rnn_state[0],
-                                                     self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
-                            #print("before train")
-                            v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1, episode_policy_sigma)
-                            episode_buffer = []
-                            sess.run(self.update_local_ops)
-                        if d == True:
-                            break
+                    # If the episode hasn't ended, but the experience buffer is full, then we
+                    # make an update step using that experience rollout.
+                    if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
+                        # Since we don't know what the true final return is, we "bootstrap" from our current
+                        # value estimation.
+                        #print("time to train")
+                        #print(episode_buffer.shape)
+                        #print(episode_buffer[0])
+                        v1 = sess.run(self.local_AC.value,
+                                      feed_dict={self.local_AC.inputs: [s],
+                                                 self.local_AC.state_in[0]: rnn_state[0],
+                                                 self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
+                        #print("before train")
+                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1, episode_policy_sigma)
+                        episode_buffer = []
+                        sess.run(self.update_local_ops)
+                    if d == True:
+                        break
 
+                self.black_framse_counter.append(number_of_black_frames)
                 self.episode_rewards.append(episode_reward)
                 self.episode_lengths.append(episode_step_count)
                 self.episode_mean_values.append(np.mean(episode_values))
@@ -188,6 +192,7 @@ class WorkerContinuous():
 
 
                     mean_reward = np.mean(self.episode_rewards[-10:])
+                    mean_black_frames = np.mean(self.black_framse_counter[-10:])
                     mean_length = np.mean(self.episode_lengths[-10:])
                     mean_value = np.mean(self.episode_mean_values[-10:])
                     summary = tf.Summary()
@@ -195,6 +200,7 @@ class WorkerContinuous():
                     summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
                     summary.value.add(tag='Other/Value', simple_value=float(mean_value))
+                    summary.value.add(tag='Other/Black frames', simple_value=float(mean_black_frames))
                     summary.value.add(tag='Perf/MaxReward', simple_value=float(np.amax(self.episode_rewards[-10:])))
                     summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
                     summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
