@@ -2,7 +2,9 @@ from ac_network_continuous import ACNetworkContinuous
 from ac_network_continuous_gaussian import ACNetworkContinuousGaussian
 from utils.helper import *
 from utils.utils import *
+from utils.csv_summary import CSVSummary
 from config import *
+import time
 import random
 import numpy as np
 import scipy.misc
@@ -22,7 +24,10 @@ class WorkerContinuous():
         self.black_framse_counter = []
         self.episode_lengths = []
         self.episode_mean_values = []
-        self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
+        summary_folder = statistics_path + str(self.number)
+        self.summary_writer = tf.summary.FileWriter(summary_folder)
+        self.csv_summary = CSVSummary(summary_folder, ["time", "step", "value"])
+
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
         self.local_AC = ACNetworkContinuousGaussian(s_size, a_size, self.name, trainer)
@@ -199,6 +204,7 @@ class WorkerContinuous():
                     summary.value.add(tag='Params/Sigma', simple_value=float(episode_policy_sigma[0]))
                     summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
+                    self.csv_summary.write("Reward", [time.time(),episode_count,mean_reward])
                     summary.value.add(tag='Other/Value', simple_value=float(mean_value))
                     summary.value.add(tag='Other/Black frames', simple_value=float(mean_black_frames))
                     summary.value.add(tag='Perf/MaxReward', simple_value=float(np.amax(self.episode_rewards[-10:])))
