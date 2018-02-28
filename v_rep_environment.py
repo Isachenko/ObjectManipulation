@@ -8,6 +8,7 @@ import random
 
 from config import *
 
+print(VREP_API_PATH)
 sys.path.append(VREP_API_PATH)
 import vrep
 
