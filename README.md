@@ -27,3 +27,6 @@ To run it you have to open with pyhton main.py and add the next 4 arguments
 -$3: Number of workers in the experiment
 
 -$4: Value coefficient in the loss expression. # Just works in discrete so far
+
+To run in peregrine run.
+    - sbatch run_A3C.sh [$arguments]

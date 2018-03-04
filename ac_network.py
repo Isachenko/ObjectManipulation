@@ -10,6 +10,8 @@ class AC_Network():
             # Input and visual encoding layers
             self.inputs = tf.placeholder(shape=[None, s_size], dtype=tf.float32)
             self.imageIn = tf.reshape(self.inputs, shape=[-1, 84, 84, 1])
+            self.temperature = tf.placeholder(tf.float32, 1)
+
             self.conv1 = slim.conv2d(activation_fn=tf.nn.elu,
                                      inputs=self.imageIn, num_outputs=16,
                                      kernel_size=[8, 8], stride=[4, 4], padding='VALID')
@@ -44,7 +46,7 @@ class AC_Network():
 
             # Output layers for policy and value estimations
             self.policy = slim.fully_connected(rnn_out, a_size,
-                                               activation_fn=tf.nn.softmax,
+                                               activation_fn=None,
                                                weights_initializer=utils.normalized_columns_initializer(0.01),
                                                biases_initializer=None)
             self.value = slim.fully_connected(rnn_out, 1,
@@ -52,6 +54,7 @@ class AC_Network():
                                               weights_initializer=utils.normalized_columns_initializer(1.0),
                                               biases_initializer=None)
 
+            self.policy = tf.nn.softmax(self.policy/self.temperature)
             # Only the worker network need ops for loss functions and gradient updating.
             if scope != 'global':
                 self.actions = tf.placeholder(shape=[None], dtype=tf.int32)
@@ -60,7 +63,8 @@ class AC_Network():
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
 
                 self.responsible_outputs = tf.reduce_sum(self.policy * self.actions_onehot, [1])
-
+                neglogpac = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=train_model.pi, labels=A)
+                pg_loss = tf.reduce_mean(ADV * neglogpac)
                 # Loss functions
                 self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))

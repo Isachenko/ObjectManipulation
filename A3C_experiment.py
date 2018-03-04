@@ -40,7 +40,7 @@ with tf.device("/cpu:0"):
     for i in range(num_workers):
         port = FIRST_VREP_PORT + i
         env = VRepEnvironment(port)
-        workers.append(Worker(env, i, s_size, a_size, trainer, model_path, global_episodes,vf))
+        workers.append(Worker(env, i, s_size, a_size, trainer, model_path, global_episodes,vf,temperature_rate))
     saver = tf.train.Saver(max_to_keep=5)
 
 with tf.Session() as sess:

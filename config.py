@@ -51,6 +51,7 @@ MAX_EPISODE_LENGTH = 200
 MAX_NUMBER_OF_EPISODES = 1000
 gamma = .99  # discount rate for advantage estimation and reward discounting
 
+temperature_rate = 1
 
 
 

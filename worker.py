@@ -6,7 +6,7 @@ import scipy.misc
 
 
 class Worker():
-    def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes,vf):
+    def __init__(self, game, name, s_size, a_size, trainer, model_path, global_episodes,vf, temperature_cte):
         self.name = "worker_" + str(name)
         self.number = name
         self.model_path = model_path
@@ -48,7 +48,9 @@ class Worker():
         self.actions = self.actions = np.identity(a_size, dtype=bool).tolist()
         self.env = game
 
-    def train(self, rollout, sess, gamma, bootstrap_value):
+        self.temperature_cte = temperature_cte
+
+    def train(self, rollout, sess, gamma, bootstrap_value, temperature):
         rollout = np.array(rollout)
         observations = rollout[:, 0]
         actions = rollout[:, 1]
@@ -72,7 +74,8 @@ class Worker():
                      self.local_AC.actions: actions,
                      self.local_AC.advantages: advantages,
                      self.local_AC.state_in[0]: self.batch_rnn_state[0],
-                     self.local_AC.state_in[1]: self.batch_rnn_state[1]}
+                     self.local_AC.state_in[1]: self.batch_rnn_state[1],
+                     self.local_AC.temperature: temperature}
         v_l, p_l, e_l, g_n, v_n, self.batch_rnn_state, _ = sess.run([self.local_AC.value_loss,
                                                                      self.local_AC.policy_loss,
                                                                      self.local_AC.entropy,
@@ -95,6 +98,7 @@ class Worker():
                 episode_frames = []
                 episode_reward = 0
                 episode_step_count = 0
+                temperature  = np.ones(1) * (1 / np.log(3 + episode_count**self.temperature_cte))
                 d = False
 
                 self.env.new_episode()
@@ -113,7 +117,8 @@ class Worker():
                         [self.local_AC.policy, self.local_AC.value, self.local_AC.state_out],
                         feed_dict={self.local_AC.inputs: [s],
                                    self.local_AC.state_in[0]: rnn_state[0],
-                                   self.local_AC.state_in[1]: rnn_state[1]})
+                                   self.local_AC.state_in[1]: rnn_state[1],
+                                   self.local_AC.temperature: temperature})
                     a = np.random.choice(a_dist[0], p=a_dist[0])
                     a = np.argmax(a_dist == a)
                     self.env.make_action(self.actions[a])
@@ -150,8 +155,9 @@ class Worker():
                         v1 = sess.run(self.local_AC.value,
                                       feed_dict={self.local_AC.inputs: [s],
                                                  self.local_AC.state_in[0]: rnn_state[0],
-                                                 self.local_AC.state_in[1]: rnn_state[1]})[0, 0]
-                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1)
+                                                 self.local_AC.state_in[1]: rnn_state[1],
+                                                 self.local_AC.temperature: temperature})[0, 0]
+                        v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, v1, temperature)
                         episode_buffer = []
                         sess.run(self.update_local_ops)
                     if d == True:
@@ -163,7 +169,7 @@ class Worker():
 
                 # Update the network using the episode buffer at the end of the episode.
                 if len(episode_buffer) != 0:
-                    v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0)
+                    v_l, p_l, e_l, g_n, v_n = self.train(episode_buffer, sess, gamma, 0.0,temperature)
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
                 #print("Episode count:",episode_count)
