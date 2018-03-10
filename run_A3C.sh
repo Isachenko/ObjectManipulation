@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=15:00:00 #This is one hour
+#SBATCH --time=7:00:00 #This is one hour
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=adrianalvarez15@gmail.com
 #SBATCH --output=job-%j.log
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=120GB#(This is max available RAM)
 cd ObjectManipulation
 module load git/2.13.2-foss-2016a
