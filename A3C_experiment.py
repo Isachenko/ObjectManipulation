@@ -3,6 +3,8 @@ import threading
 from time import sleep
 import datetime
 
+from config import *
+
 
 import tensorflow as tf
 
@@ -10,7 +12,7 @@ from ac_network import AC_Network
 from v_rep_environment import *
 from worker import Worker
 
-import shutil
+#import shutil
 
 s_size = 7056  # Observations are greyscale frames of 84 * 84 * 1
 a_size = 6  # clockwise/counterclockwise, up/down, back/forth
@@ -30,7 +32,7 @@ if not os.path.exists(frames_path):
 
 with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes', trainable=False)
-    trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
+    trainer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     master_network = AC_Network(s_size, a_size, 'global', None, vf)  # Generate global network
     if num_workers == -1:
         num_workers = multiprocessing.cpu_count()  # Set workers at number of available CPU threads
@@ -41,7 +43,7 @@ with tf.device("/cpu:0"):
         port = FIRST_VREP_PORT + i
         env = VRepEnvironment(port)
         workers.append(Worker(env, i, s_size, a_size, trainer, model_path, global_episodes,vf,temperature_rate))
-    saver = tf.train.Saver(max_to_keep=5)
+    saver = tf.train.Saver(max_to_keep=1)
 
 with tf.Session() as sess:
     coord = tf.train.Coordinator()

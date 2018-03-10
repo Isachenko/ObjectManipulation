@@ -3,6 +3,9 @@ import threading
 from time import sleep
 import datetime
 
+from config import *
+
+
 
 import tensorflow as tf
 print(tf.__version__)
@@ -33,7 +36,7 @@ if not os.path.exists(frames_path):
 
 with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes', trainable=False)
-    trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
+    trainer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     master_network = ACNetworkContinuousGaussian(s_size, a_size, 'global', None)  # Generate global network
     if num_workers == -1:
         num_workers = multiprocessing.cpu_count()  # Set workers at number of available CPU threads

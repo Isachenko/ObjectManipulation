@@ -63,8 +63,6 @@ class AC_Network():
                 self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
 
                 self.responsible_outputs = tf.reduce_sum(self.policy * self.actions_onehot, [1])
-                neglogpac = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=train_model.pi, labels=A)
-                pg_loss = tf.reduce_mean(ADV * neglogpac)
                 # Loss functions
                 self.value_loss = 0.5 * tf.reduce_sum(tf.square(self.target_v - tf.reshape(self.value, [-1])))
                 self.entropy = - tf.reduce_sum(self.policy * tf.log(self.policy))

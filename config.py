@@ -34,7 +34,8 @@ if len(sys.argv) > 1:
     else:
         RANDOM = False
     num_workers = int(sys.argv[3])
-    vf = float(sys.argv[4])
+    learning_rate = float(sys.argv[4])
+    vf = float(sys.argv[5])
 
 
 else:
@@ -62,7 +63,8 @@ results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S")+'_worker
 if len(sys.argv) > 1:
     var1 = int(sys.argv[1])
     var2 = int(sys.argv[2])
-    results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S_") + discrete_or_continuous[var1] + "_" + experiment[var2]+'_workers_'+str(num_workers) +'_vf_'+ str(vf)
+    results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S_") + discrete_or_continuous[var1] + "_" + \
+                   experiment[var2] + '_workers_' + str(num_workers) + '_vf_' + str(vf) + '_lr_' + str(learning_rate)
 
 model_path = results_path + '/model'
 frames_path = results_path + '/frames'
