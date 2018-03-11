@@ -26,6 +26,7 @@ experiment = {  0 : "speed",
 VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/wrong'
 vf= 0.5
 num_workers = 1
+learning_rate = 0.000001
 if len(sys.argv) > 1:
     s = int(sys.argv[2])
     SCENE_PATH = scenes[s]

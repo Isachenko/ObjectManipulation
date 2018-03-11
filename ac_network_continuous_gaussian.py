@@ -24,18 +24,18 @@ class ACNetworkContinuousGaussian():
             # Input and visual encoding layers
             self.inputs = tf.placeholder(shape=[None, s_size], dtype=tf.float32)
             self.imageIn = tf.reshape(self.inputs, shape=[-1, 84, 84, 1])
-            self.conv1 = slim.conv2d(activation_fn=tf.nn.elu,
+            self.conv1 = slim.conv2d(activation_fn=tf.nn.relu,
                                      inputs=self.imageIn, num_outputs=16,
                                      kernel_size=[8, 8], stride=[4, 4], padding='VALID')
-            self.conv2 = slim.conv2d(activation_fn=tf.nn.elu,
+            self.conv2 = slim.conv2d(activation_fn=tf.nn.relu,
                                      inputs=self.conv1, num_outputs=32,
                                      kernel_size=[4, 4], stride=[2, 2], padding='VALID')
-            self.conv3 = slim.conv2d(activation_fn=tf.nn.elu,
-                                     inputs=self.conv2, num_outputs=64,
-                                     kernel_size=[3, 3], stride=[1, 1], padding='VALID')
-            #hidden = slim.fully_connected(slim.flatten(self.conv2), 512, activation_fn=tf.nn.elu)
-            hidden = slim.fully_connected(slim.flatten(self.conv3), 512, activation_fn=tf.nn.elu)
-            hidden_2 = slim.fully_connected(slim.flatten(hidden), 256, activation_fn=tf.nn.elu)
+            #self.conv3 = slim.conv2d(activation_fn=tf.nn.elu,
+            #                         inputs=self.conv2, num_outputs=64,
+            #                         kernel_size=[3, 3], stride=[1, 1], padding='VALID')
+            hidden = slim.fully_connected(slim.flatten(self.conv2), 512, activation_fn=tf.nn.relu)
+            #hidden = slim.fully_connected(slim.flatten(self.conv3), 512, activation_fn=tf.nn.elu)
+            #hidden_2 = slim.fully_connected(slim.flatten(hidden), 256, activation_fn=tf.nn.elu)
 
             #Recurrent network for temporal dependencies
             lstm_cell = tf.contrib.rnn.BasicLSTMCell(256, state_is_tuple=True)
@@ -57,7 +57,7 @@ class ACNetworkContinuousGaussian():
 
             rnn_out = tf.reshape(lstm_outputs, [-1, 256])
 
-            rnn_out = tf.reshape(hidden_2, [-1, 256])
+            rnn_out = tf.reshape(hidden, [-1, 512])
 
             # Output layers for policy and value estimations
             self.policy_mean = slim.fully_connected(rnn_out, a_size,
