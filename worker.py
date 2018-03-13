@@ -98,7 +98,7 @@ class Worker():
                 episode_frames = []
                 episode_reward = 0
                 episode_step_count = 0
-                temperature  = np.ones(1) * (1 / np.log(3 + episode_count**self.temperature_cte))
+                temperature  = np.ones(1) * (np.exp(-(episode_count / 300)) + 0.05)
                 d = False
 
                 self.env.new_episode()

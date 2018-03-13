@@ -98,7 +98,9 @@ class WorkerContinuous():
                 episode_frames = []
                 episode_reward = 0
                 episode_step_count = 0
-                episode_policy_sigma = np.ones(self.a_size)*(1/np.log(3+episode_count**2))
+                #episode_policy_sigma = np.ones(self.a_size)*(1/np.log(3+episode_count**2))
+                episode_policy_sigma = np.ones(self.a_size)* ((0.2-0.05) * np.exp(-(episode_count / 300)) + 0.05)
+
                 #print(episode_policy_sigma)
                 d = False
 
