@@ -193,9 +193,9 @@ class WorkerContinuous():
                         #scipy.misc.toimage(images[10], cmin=0.0, cmax=...).save(frames_path + '/image' + str(episode_count) + '.jpg')
                         #scipy.misc.imsave(frames_path + '/image' + str(episode_count) + '.jpg', images[10])
 
-                    if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.number == 0:
-                        saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
-                        print("Saved Model")
+                    #if episode_count % MODEL_SAVE_TIME_STEP == 0 and self.number == 0:
+                    #    saver.save(sess, self.model_path + '/model-' + str(episode_count) + '.cptk')
+                    #    print("Saved Model")
 
 
                     mean_reward = np.mean(self.episode_rewards[-10:])
