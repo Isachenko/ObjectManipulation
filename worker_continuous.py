@@ -105,6 +105,8 @@ class WorkerContinuous():
                 d = False
 
                 self.env.new_episode()
+                if RANDOM == True:
+                    self.env.set_target_position_random_X()
                 s = self.env.get_state().image
                 s = process_frame(s)
                 rnn_state = self.local_AC.state_init

@@ -173,7 +173,7 @@ class Worker():
 
                 # Periodically save gifs of episodes, model parameters, and summary statistics.
                 #print("Episode count:",episode_count)
-                if episode_count % STATISTICS_SAVE_TIME_STEP == 0 and episode_count != 0:
+                if episode_count % STATISTICS_SAVE_TIME_STEP == 0:
                     if self.number == 0 and episode_count % IMAGE_SAVE_TIME_STEP == 0:
                         time_per_step = 0.05
                         images = np.array(episode_frames)

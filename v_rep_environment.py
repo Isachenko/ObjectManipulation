@@ -178,7 +178,7 @@ class VRepEnvironment():
 
     def get_reward_command_line(self):
         s = int(sys.argv[2])
-        #               Speed small cube,   distance                    , go to the left            , big cube
+        #               Speed small cube,   distance                    , go to the left            , random
         rewards = [self.get_reward_speed(),self.get_reward_distance(),self.get_reward_for_left(),self.get_reward_speed(),self.get_reward_speed()]
         reward = rewards[s]
         return reward
@@ -196,13 +196,14 @@ class VRepEnvironment():
         return_code, position = vrep.simxGetObjectPosition(self.connection_id, self.target_object_handle, self.position_object_handle,
                                                            vrep.simx_opmode_buffer)
         reward = 0
+        MIN_DISTANCE = 0.01
         for i in position:
             reward += i * i
 
-        initial_distance = 0.0856
-        reward = round(reward, 4) - initial_distance
-        #reward = 1/(reward*1000)
-        #print(reward)
+        if reward < MIN_DISTANCE:
+            reward = MIN_DISTANCE
+
+        reward = (1/round(reward, 4)) * MIN_DISTANCE
         return reward
 
     def get_reward_1(self):
@@ -344,9 +345,11 @@ class VRepEnvironment():
 
     def set_target_position_random_X(self):
         position = []
-        position.append(random.random()*-0.25)
-        position.append(-0.35)
-        position.append(0.05)
+        INITIAL_POSITION_CUBE = [-0.2,-0.35,0.05]
+        MOVE_RANGE=0.2
+        position.append(random.uniform(-MOVE_RANGE,MOVE_RANGE)+ INITIAL_POSITION_CUBE[0])
+        position.append(INITIAL_POSITION_CUBE[1])
+        position.append(INITIAL_POSITION_CUBE[2])
         returnCode = vrep.simxSetObjectPosition(self.connection_id,  self.target_object_handle, -1, position, vrep.simx_opmode_oneshot)
 
 
