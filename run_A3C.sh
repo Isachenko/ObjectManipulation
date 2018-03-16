@@ -13,4 +13,5 @@ module load matplotlib/1.5.3-foss-2016a-Python-3.5.2
 module load libGLU/9.0.0-foss-2016a-Mesa-11.2.1
 module load V-REP/3.4.0
 module load FFmpeg/3.0.2-foss-2016a
+echo $*
 python3 main.py $*

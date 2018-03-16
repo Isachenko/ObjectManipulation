@@ -2,6 +2,9 @@ from ac_network import AC_Network
 from utils.helper import *
 from utils.utils import *
 from config import *
+from utils.csv_summary import CSVSummary
+import time
+
 import scipy.misc
 
 
@@ -16,7 +19,10 @@ class Worker():
         self.episode_rewards = []
         self.episode_lengths = []
         self.episode_mean_values = []
-        self.summary_writer = tf.summary.FileWriter(statistics_path + str(self.number))
+        summary_folder = statistics_path + str(self.number)
+        self.summary_writer = tf.summary.FileWriter(summary_folder)
+        self.csv_summary = CSVSummary(summary_folder, ["time", "step", "value"])
+
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
         self.local_AC = AC_Network(s_size, a_size, self.name, trainer,vf)
@@ -193,6 +199,7 @@ class Worker():
                     mean_value = np.mean(self.episode_mean_values[-5:])
                     summary = tf.Summary()
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
+                    self.csv_summary.write("Reward_worker_"+ str(self.number)+'_'+EXPERIMENT, [time.time(),episode_count,mean_reward])
                     summary.value.add(tag='Perf/Length', simple_value=float(mean_length))
                     summary.value.add(tag='Perf/Value', simple_value=float(mean_value))
                     summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))

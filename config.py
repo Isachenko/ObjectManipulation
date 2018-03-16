@@ -27,6 +27,8 @@ VREP_EXE_PATH = '/Users/Isaac/V-REP_PRO_EDU_V3_4_0_Mac/vrep.app/Contents/MacOS/w
 vf= 0.5
 num_workers = 1
 learning_rate = 0.000001
+RANDOM = False
+
 if len(sys.argv) > 1:
     s = int(sys.argv[2])
     SCENE_PATH = scenes[s]
@@ -46,7 +48,6 @@ VREP_SCENE_PATH = MAIN_SCRIPT_PATH + SCENE_PATH
 REWARD_FUNCTION = ""
 VREP_API_PATH = MAIN_SCRIPT_PATH + '/vrep_api'
 VREP_HEADLESS = True
-RANDOM = True
 
 load_model = False
 MAX_EPISODE_LENGTH = 200
@@ -61,11 +62,13 @@ temperature_rate = 1
 now = datetime.datetime.now()
 
 results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S")+'_workers_'+str(num_workers) +'_vf_'+ str(vf)
+EXPERIMENT = now.strftime("_%d-%m-%Y_%H-%M-%S_")
 if len(sys.argv) > 1:
     var1 = int(sys.argv[1])
     var2 = int(sys.argv[2])
-    results_path = "./archive/results" + now.strftime("_%d-%m-%Y_%H-%M-%S_") + discrete_or_continuous[var1] + "_" + \
+    EXPERIMENT =  now.strftime("_%d-%m-%Y_%H-%M-%S_") + discrete_or_continuous[var1] + "_" + \
                    experiment[var2] + '_workers_' + str(num_workers) + '_vf_' + str(vf) + '_lr_' + str(learning_rate)
+    results_path = "./archive/results" + EXPERIMENT
 
 model_path = results_path + '/model'
 frames_path = results_path + '/frames'

@@ -208,7 +208,7 @@ class WorkerContinuous():
                     summary.value.add(tag='Params/Sigma', simple_value=float(episode_policy_sigma[0]))
                     summary.value.add(tag='Params/Entropy', simple_value=float(e_l))
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
-                    self.csv_summary.write("Reward", [time.time(),episode_count,mean_reward])
+                    self.csv_summary.write("Reward_worker_"+ str(self.number)+'_'+EXPERIMENT, [time.time(),episode_count,mean_reward])
                     summary.value.add(tag='Other/Value', simple_value=float(mean_value))
                     summary.value.add(tag='Other/Black frames', simple_value=float(mean_black_frames))
                     summary.value.add(tag='Perf/MaxReward', simple_value=float(np.amax(self.episode_rewards[-10:])))
