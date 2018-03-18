@@ -203,7 +203,8 @@ class VRepEnvironment():
         if reward < MIN_DISTANCE:
             reward = MIN_DISTANCE
 
-        reward = (1/round(reward, 4)) * MIN_DISTANCE
+        reward =  0.085625 - round(reward, 6)
+        print(reward)
         return reward
 
     def get_reward_1(self):

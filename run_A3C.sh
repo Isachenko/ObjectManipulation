@@ -4,7 +4,7 @@
 #SBATCH --mail-user=adrianalvarez15@gmail.com
 #SBATCH --output=job-%j.log
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=120GB#(This is max available RAM)
+#SBATCH --mem=60GB#(This is max available RAM)
 cd ObjectManipulation
 module load git/2.13.2-foss-2016a
 module load Python/3.5.2-foss-2016a
