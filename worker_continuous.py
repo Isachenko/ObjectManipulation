@@ -174,7 +174,7 @@ class WorkerContinuous():
                         sess.run(self.update_local_ops)
                     if d == True:
                         break
-
+                print(episode_reward)
                 self.black_framse_counter.append(number_of_black_frames)
                 self.episode_rewards.append(episode_reward)
                 self.episode_lengths.append(episode_step_count)

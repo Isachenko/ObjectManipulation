@@ -204,8 +204,7 @@ class VRepEnvironment():
             reward = MIN_DISTANCE
 
         reward =  0.085625 - round(reward, 6)
-        print(reward)
-        return reward
+        return reward * 10
 
     def get_reward_1(self):
         err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
