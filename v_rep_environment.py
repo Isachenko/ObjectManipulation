@@ -30,6 +30,7 @@ class VRepEnvironment():
         self.episode_length = MAX_EPISODE_LENGTH
         self.current_step = 0
         self.port = port
+        self.distance = 0.085625
 
         headless = ""
         if VREP_HEADLESS:
@@ -195,16 +196,20 @@ class VRepEnvironment():
     def get_reward_distance(self):
         return_code, position = vrep.simxGetObjectPosition(self.connection_id, self.target_object_handle, self.position_object_handle,
                                                            vrep.simx_opmode_buffer)
+        current_distance = 0
         reward = 0
-        MIN_DISTANCE = 0.01
         for i in position:
-            reward += i * i
+            current_distance += i * i
 
-        if reward < MIN_DISTANCE:
-            reward = MIN_DISTANCE
+        if current_distance + 0.0001 < self.distance:
+            reward = (0.085625  - round(current_distance, 6))*10
 
-        reward =  0.085625 - round(reward, 6)
-        return reward * 10
+        #elif current_distance - 0.00001 > self.distance:
+        #    reward = -0.1
+
+        self.distance = current_distance
+
+        return reward
 
     def get_reward_1(self):
         err, linear_v, ang_v = vrep.simxGetObjectVelocity(self.connection_id, self.target_object_handle, vrep.simx_opmode_buffer)
